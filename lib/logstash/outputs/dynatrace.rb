@@ -27,7 +27,7 @@ module LogStash
       concurrency :single
 
       # The full URL of the Dynatrace log ingestion endpoint, e.g. https://my-active-gate.example.com/api/logs/ingest
-      config :active_gate_url, validate: :string, required: true
+      config :active_gate_url, validate: :uri, required: true
 
       # The API token to use to authenticate requests to the log ingestion endpoint. Must have TODO scope
       config :api_key, validate: :string, required: true
@@ -42,7 +42,7 @@ module LogStash
       def register
         require 'net/https'
         require 'uri'
-        @uri = URI.parse(@active_gate_url)
+        @uri = URI.parse(@active_gate_url.uri.to_s)
         @client = Net::HTTP.new(@uri.host, @uri.port)
 
         if uri.scheme == 'https'
