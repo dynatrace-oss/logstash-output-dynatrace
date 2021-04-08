@@ -1,0 +1,72 @@
+:plugin: dynatrace
+:type: output
+
+///////////////////////////////////////////
+START - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+:version: %VERSION%
+:release_date: %RELEASE_DATE%
+:changelog_url: %CHANGELOG_URL%
+:include_path: ../../../../logstash/docs/include
+///////////////////////////////////////////
+END - GENERATED VARIABLES, DO NOT EDIT!
+///////////////////////////////////////////
+
+[id="plugins-{type}s-{plugin}"]
+
+=== Dynatrace output plugin
+
+include::{include_path}/plugin_header.asciidoc[]
+
+==== Description
+
+Currently, this is a prototype and not intended for production use.
+It is not covered by Dynatrace support.
+
+A logstash output plugin for sending logs to the Dynatrace https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/[Generic log ingest API v2].
+
+[id="plugins-{type}s-{plugin}-options"]
+==== Example Output Configuration Options
+
+This plugin supports the following configuration options plus the <<plugins-{type}s-{plugin}-common-options>> described later.
+
+[cols="<,<,<",options="header",]
+|=======================================================================
+|Setting |Input type|Required
+| <<plugins-{type}s-{plugin}-active_gate_url>> |{logstash-ref}/configuration-file-structure.html#string[string]|Yes
+| <<plugins-{type}s-{plugin}-api_key>> |{logstash-ref}/configuration-file-structure.html#string[string]|Yes
+| <<plugins-{type}s-{plugin}-ssl_verify_none>> |{logstash-ref}/configuration-file-structure.html#boolean[boolean]|No
+|=======================================================================
+
+Also see <<plugins-{type}s-{plugin}-common-options>> for a list of options supported by all
+output plugins.
+
+[id="plugins-{type}s-{plugin}-active_gate_url"]
+===== `active_gate_url` 
+
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
+
+This is the full URL of the https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/[Generic log ingest API v2] endpoint on your ActiveGate.
+Example: `"active_gate_url" => "https://127.0.0.1:9999/e/abc12345/api/v2/logs/ingest"`
+
+[id="plugins-{type}s-{plugin}-api_key"]
+===== `api_key` 
+
+  * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
+
+This is the https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication/[Dynatrace API token] which will be used to authenticate log ingest requests.
+It should be assigned only the `Log import` permission.
+Example: `"api_key" => "dt0c01.4XLO3..."`
+
+[id="plugins-{type}s-{plugin}-ssl_verify_none"]
+===== `ssl_verify_none` 
+
+  * Value type is {logstash-ref}/configuration-file-structure.html#boolean[boolean]
+  * Default value is `false`
+
+It is recommended to leave this optional configuration set to `false` unless absolutely required.
+Setting `ssl_verify_none` to `true` causes the output plugin to skip certificate verification when sending log ingest requests to SSL and TLS protected HTTPS endpoints.
+This option may be required if you are using a self-signed certificate, an expired certificate, or a certificate which was generated for a different domain than the one in use.
+
+[id="plugins-{type}s-{plugin}-common-options"]
+include::{include_path}/{type}.asciidoc[]
