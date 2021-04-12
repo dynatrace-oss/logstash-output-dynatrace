@@ -15,8 +15,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# require "logstash/devutils/rake"
-# require 'bundler/gem_tasks'
 require 'rubocop/rake_task'
 
 RuboCop::RakeTask.new

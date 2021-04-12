@@ -20,10 +20,8 @@ include::{include_path}/plugin_header.asciidoc[]
 
 ==== Description
 
-Currently, this is a prototype and not intended for production use.
-It is not covered by Dynatrace support.
-
 A logstash output plugin for sending logs to the Dynatrace https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/[Generic log ingest API v2].
+Please review the documentation for this API before using the plugin.
 
 [id="plugins-{type}s-{plugin}-options"]
 ==== Example Output Configuration Options

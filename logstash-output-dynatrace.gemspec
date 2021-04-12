@@ -18,9 +18,11 @@ Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
   s.version = '0.1.0'
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
-  s.description = 'This gem is a Logstash plugin required to be installed ontop of the Logstash' \
-                  'core pipeline using $LS_HOME/bin/logstash-plugin install gemname.' \
-                  'This gem is not a stand-alone program'
+  s.description = <<-EOF
+    This gem is a Logstash plugin required to be installed on top of the Logstash
+    core pipeline using $LS_HOME/bin/logstash-plugin install logstash-output-dynatrace.
+    This gem is not a stand-alone program.
+  EOF
   s.authors       = ['Dynatrace Open Source Engineering']
   s.email         = ['opensource@dynatrace.com']
   s.homepage      = 'https://github.com/dynatrace-oss/logstash-output-dynatrace'
@@ -37,9 +39,8 @@ Gem::Specification.new do |s|
   s.metadata = { 'logstash_plugin' => 'true', 'logstash_group' => 'output' }
 
   # Gem dependencies
-  # #
   s.add_runtime_dependency 'logstash-codec-json'
-  s.add_runtime_dependency 'logstash-core-plugin-api', '>= 2.0.0', '< 2.99'
+  s.add_runtime_dependency 'logstash-core-plugin-api', '>= 2.0.0', '< 3'
 
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'sinatra'
