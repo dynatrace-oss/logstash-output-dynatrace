@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
   s.description = <<-EOF
     This gem is a Logstash plugin required to be installed on top of the Logstash
-    core pipeline using $LS_HOME/bin/logstash-plugin install logstash-output-dynatrace.
+    core pipeline using `$LS_HOME/bin/logstash-plugin install logstash-output-dynatrace`.
     This gem is not a stand-alone program.
   EOF
   s.authors       = ['Dynatrace Open Source Engineering']
