@@ -33,7 +33,7 @@ module LogStash
       # - on Managed: https://{your-domain}/e/{your-environment-id}/api/v2/logs/ingest
       config :ingest_endpoint_url, validate: :uri, required: true
 
-      # The API token to use to authenticate requests to the log ingestion endpoint. Must have TODO scope
+      # The API token to use to authenticate requests to the log ingestion endpoint. Must have LogImport (Log import) scope.
       config :api_key, validate: :string, required: true
 
       # Disable SSL validation by setting :verify_mode OpenSSL::SSL::VERIFY_NONE
