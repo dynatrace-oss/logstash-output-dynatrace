@@ -92,7 +92,7 @@ describe LogStash::Outputs::Dynatrace do
   end
   let(:url) { "http://localhost:#{port}/good" }
   let(:key) { 'api.key' }
-  let(:subject) { LogStash::Outputs::Dynatrace.new({ 'api_key' => key, 'active_gate_url' => url }) }
+  let(:subject) { LogStash::Outputs::Dynatrace.new({ 'api_key' => key, 'ingest_endpoint_url' => url }) }
 
   before do
     subject.register

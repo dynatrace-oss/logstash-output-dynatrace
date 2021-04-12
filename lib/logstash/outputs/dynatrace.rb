@@ -22,14 +22,16 @@ module LogStash
   module Outputs
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
-      @version = ::File.read(::File.expand_path('../../../VERSION', __dir__)).strip
+      @plugin_version = ::File.read(::File.expand_path('../../../VERSION', __dir__)).strip
 
       config_name 'dynatrace'
 
       concurrency :single
 
-      # The full URL of the Dynatrace log ingestion endpoint, e.g. https://my-active-gate.example.com/api/logs/ingest
-      config :active_gate_url, validate: :uri, required: true
+      # The full URL of the Dynatrace log ingestion endpoint:
+      # - on SaaS:    https://{your-environment-id}.live.dynatrace.com/api/v2/logs/ingest
+      # - on Managed: https://{your-domain}/e/{your-environment-id}/api/v2/logs/ingest
+      config :ingest_endpoint_url, validate: :uri, required: true
 
       # The API token to use to authenticate requests to the log ingestion endpoint. Must have TODO scope
       config :api_key, validate: :string, required: true
@@ -44,7 +46,7 @@ module LogStash
       def register
         require 'net/https'
         require 'uri'
-        @uri = URI.parse(@active_gate_url.uri.to_s)
+        @uri = URI.parse(@ingest_endpoint_url.uri.to_s)
         @client = Net::HTTP.new(@uri.host, @uri.port)
 
         if uri.scheme == 'https'
@@ -61,7 +63,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => "logstash-output-dynatrace v#{@version}",
+          'User-Agent' => "logstash-output-dynatrace v#{@plugin_version}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }
@@ -74,7 +76,7 @@ module LogStash
         request = Net::HTTP::Post.new(uri, headers)
         request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
         response = @client.request(request)
-        return if response.code =~ /^2\d\d$/
+        return if response.is_a? Net::HTTPSuccess
 
         log_failure('Bad Response', request: request.inspect, response: response.inspect)
       end
