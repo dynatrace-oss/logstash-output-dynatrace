@@ -14,9 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+version = File.read(File.expand_path('VERSION', __dir__)).strip
+
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
-  s.version = '0.1.0'
+  s.version = version
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
   s.description = <<-EOF
     This gem is a Logstash plugin required to be installed on top of the Logstash
@@ -31,7 +33,7 @@ Gem::Specification.new do |s|
 
   # Files
   s.files = Dir['lib/**/*', 'spec/**/*', 'vendor/**/*', '*.gemspec', '*.md', 'CONTRIBUTORS', 'Gemfile', 'LICENSE',
-                'NOTICE.TXT']
+                'NOTICE.TXT', 'VERSION']
   # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
@@ -42,11 +44,11 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'logstash-codec-json'
   s.add_runtime_dependency 'logstash-core-plugin-api', '>= 2.0.0', '< 3'
 
+  s.add_development_dependency 'insist'
   s.add_development_dependency 'logstash-devutils'
+  s.add_development_dependency 'logstash-input-generator'
   s.add_development_dependency 'sinatra'
   s.add_development_dependency 'webrick'
-  s.add_development_dependency 'insist'
-  s.add_development_dependency 'logstash-input-generator'
 
   s.add_development_dependency 'rubocop', '1.9.1'
   s.add_development_dependency 'rubocop-rake', '0.5.1'

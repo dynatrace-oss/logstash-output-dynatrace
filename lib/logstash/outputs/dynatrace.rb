@@ -22,6 +22,8 @@ module LogStash
   module Outputs
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
+      @version = ::File.read(::File.expand_path('../../../VERSION', __dir__)).strip
+
       config_name 'dynatrace'
 
       concurrency :single
@@ -59,7 +61,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => 'logstash-output-dynatrace v0.1.0',
+          'User-Agent' => "logstash-output-dynatrace v#{@version}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }
