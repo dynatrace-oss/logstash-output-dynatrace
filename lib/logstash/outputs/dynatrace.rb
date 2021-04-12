@@ -51,12 +51,12 @@ module LogStash
           @client.use_ssl = true
           @client.verify_mode = OpenSSL::SSL::VERIFY_NONE if @ssl_verify_none
         end
-        @logger.debug('Client', client: @client.inspect)
+        @logger.info('Client', client: @client.inspect)
       end
 
       # This is split into a separate method mostly to help testing
       def log_failure(message, opts)
-        @logger.error("[Dynatrace Output Failure] #{message}", opts)
+        @logger.error(message, opts)
       end
 
       def headers
