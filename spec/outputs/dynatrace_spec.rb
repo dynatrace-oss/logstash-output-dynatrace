@@ -39,8 +39,7 @@ class TestApp < Sinatra::Base
   end
 
   class << self
-    attr_writer :last_request
-    attr_reader :last_request
+    attr_accessor :last_request
 
     def clear
       self.last_request = nil
