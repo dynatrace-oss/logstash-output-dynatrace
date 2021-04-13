@@ -103,7 +103,6 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'with passing requests' do
     before do
-      # TestApp.last_request = nil
       TestApp.clear
       subject.multi_receive([event])
     end
