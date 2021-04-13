@@ -100,7 +100,7 @@ describe LogStash::Outputs::Dynatrace do
   end
 
   context 'sending no events' do
-    it 'should not block the pipeline' do
+    it 'does not crash on empty events' do
       subject.multi_receive([])
     end
   end
