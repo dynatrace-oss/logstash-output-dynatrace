@@ -19,7 +19,6 @@ require 'logstash/codecs/plain'
 require 'logstash/event'
 require 'sinatra'
 require 'insist'
-require_relative '../supports/compressed_requests'
 
 PORT = rand(65_535 - 1024) + 1025
 
@@ -30,9 +29,6 @@ PORT = rand(65_535 - 1024) + 1025
 # == Sinatra has ended his set (crowd applauds)
 #
 class TestApp < Sinatra::Base
-  # on the fly uncompress gzip content
-  use CompressedRequests
-
   # disable WEBrick logging
   def self.server_settings
     { AccessLog: [], Logger: WEBrick::BasicLog.new(nil, WEBrick::BasicLog::FATAL) }
