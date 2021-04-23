@@ -2,31 +2,26 @@
 
 [![Travis Build Status](https://travis-ci.com/logstash-plugins/logstash-output-example.svg)](https://travis-ci.com/logstash-plugins/logstash-output-example)
 
-This is a plugin for [Logstash](https://github.com/elastic/logstash).
+> This project is developed and maintained by Dynatrace R&D.
 
-It is fully free and fully open source. The license is Apache 2.0, meaning you are pretty much free to use it however you want in whatever way.
+A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 
 ## Documentation
 
-Logstash provides infrastructure to automatically build documentation for this plugin. We provide a template file, index.asciidoc, where you can add documentation. The contents of this file will be converted into html and then placed with other plugin documentation in a [central location](http://www.elastic.co/guide/en/logstash/current/).
-
-- For formatting config examples, you can use the asciidoc `[source,json]` directive
-- For more asciidoc formatting tips, see the excellent reference here https://github.com/elastic/docs#asciidoc-guide
-
-## Need Help?
-
-Need help? Try #logstash on freenode IRC or the https://discuss.elastic.co/c/logstash discussion forum.
+Logstash provides plugin documentation in a [central location](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-dynatrace.html).
 
 ## Developing
 
 ### 1. Plugin Developement and Testing
 
 #### Code
+
 - To get started, you'll need JRuby with the Bundler gem installed.
 
-- Create a new plugin or clone and existing from the GitHub [logstash-plugins](https://github.com/logstash-plugins) organization. We also provide [example plugins](https://github.com/logstash-plugins?query=example).
+- Clone the plugin from github
 
 - Install dependencies
+
 ```sh
 bundle install
 ```
@@ -50,22 +45,28 @@ bundle exec rspec
 #### 2.1 Run in a local Logstash clone
 
 - Edit Logstash `Gemfile` and add the local plugin path, for example:
+
 ```ruby
-gem "logstash-filter-awesome", :path => "/your/local/logstash-filter-awesome"
+gem "logstash-output-dynatrace", :path => "/your/local/logstash-output-dynatrace"
 ```
+
 - Install plugin
+
 ```sh
 # Logstash 2.3 and higher
 bin/logstash-plugin install --no-verify
 
 # Prior to Logstash 2.3
 bin/plugin install --no-verify
+```
 
-```
 - Run Logstash with your plugin
+
 ```sh
-bin/logstash -e 'filter {awesome {}}'
+bin/logstash -e \
+    'input { generator { count => 100 } } output { dynatrace { api_key => "your_api_key_here" ingest_endpoint_url => "https://{your-environment-id}.live.dynatrace.com/api/v2/logs/ingest" } }'
 ```
+
 At this point any modifications to the plugin code will be applied to this local Logstash setup. After modifying the plugin, simply rerun Logstash.
 
 #### 2.2 Run in an installed Logstash
@@ -73,18 +74,22 @@ At this point any modifications to the plugin code will be applied to this local
 You can use the same **2.1** method to run your plugin in an installed Logstash by editing its `Gemfile` and pointing the `:path` to your local plugin development directory or you can build the gem and install it using:
 
 - Build your plugin gem
+
 ```sh
-gem build logstash-filter-awesome.gemspec
+gem build logstash-output-dynatrace.gemspec
+
 ```
+
 - Install the plugin from the Logstash home
+
 ```sh
 # Logstash 2.3 and higher
 bin/logstash-plugin install --no-verify
 
 # Prior to Logstash 2.3
 bin/plugin install --no-verify
-
 ```
+
 - Start Logstash and proceed to test the plugin
 
 ## Contributing
