@@ -4,9 +4,6 @@
 
 > This project is developed and maintained by Dynatrace R&D.
 
-Currently, this is a prototype and not intended for production use.
-It is not covered by Dynatrace support.
-
 A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 ## Documentation
 
