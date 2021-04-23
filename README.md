@@ -7,7 +7,7 @@
 A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 ## Documentation
 
-Logstash provides plugin documentation in a [central location](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-dynatrace.html) ge
+Logstash provides plugin documentation in a [central location](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-dynatrace.html).
 
 ## Developing
 
@@ -57,7 +57,7 @@ bin/plugin install --no-verify
 - Run Logstash with your plugin
 ```sh
 bin/logstash -e \
-    'input { generator { count => 100 } } output { dynatrace { api_key => "your_api_key_here" active_gate_url => "https://abc12345.live.dynatrace.com/api/v2/logs/ingest" } }'
+    'input { generator { count => 100 } } output { dynatrace { api_key => "your_api_key_here" ingest_endpoint_url => "https://{your-environment-id}.live.dynatrace.com/api/v2/logs/ingest" } }'
 ```
 At this point any modifications to the plugin code will be applied to this local Logstash setup. After modifying the plugin, simply rerun Logstash.
 
