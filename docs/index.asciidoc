@@ -53,7 +53,7 @@ Example: `"ingest_endpoint_url" => "https://abc123456.live.dynatrace.com/api/v2/
   * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
 
 This is the https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication/[Dynatrace API token] which will be used to authenticate log ingest requests.
-It requires the `LogImport` (Log import) permission to be set and it is recommended to limit scope to only this one.
+It requires the `logs.ingest` (Ingest Logs) scope to be set and it is recommended to limit scope to only this one.
 Example: `"api_key" => "dt0c01.4XLO3..."`
 
 [id="plugins-{type}s-{plugin}-ssl_verify_none"]
