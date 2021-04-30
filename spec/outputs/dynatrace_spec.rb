@@ -44,7 +44,7 @@ class TestApp < Sinatra::Base
 
   post '/good' do
     self.class.last_request = request
-    [201, 'Accepted']
+    [204, '']
   end
 
   post '/bad' do
