@@ -18,8 +18,13 @@ require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
 
+MAX_RETRIES = 5
+
 module LogStash
   module Outputs
+    class RetryableError < StandardError;
+    end
+
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
       @plugin_version = ::File.read(::File.expand_path('../../../VERSION', __dir__)).strip
@@ -41,7 +46,7 @@ module LogStash
 
       default :codec, 'json'
 
-      attr_accessor :uri
+      attr_accessor :uri, :plugin_version
 
       def register
         require 'net/https'
@@ -56,11 +61,6 @@ module LogStash
         @logger.info('Client', client: @client.inspect)
       end
 
-      # This is split into a separate method mostly to help testing
-      def log_failure(message, opts)
-        @logger.error(message, opts)
-      end
-
       def headers
         {
           'User-Agent' => "logstash-output-dynatrace v#{@plugin_version}",
@@ -73,12 +73,39 @@ module LogStash
       def multi_receive(events)
         return if events.length.zero?
 
-        request = Net::HTTP::Post.new(uri, headers)
-        request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
-        response = @client.request(request)
-        return if response.is_a? Net::HTTPSuccess
+        retries = 0
+        begin
+          request = Net::HTTP::Post.new(uri, headers)
+          request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
+          response = send(request)
+          return if response.is_a? Net::HTTPSuccess
 
-        log_failure('Bad Response', request: request.inspect, response: response.inspect)
+          failure_message = "Dynatrace returned #{response.code} #{response.message}."
+
+          if response.is_a? Net::HTTPServerError
+            raise RetryableError.new failure_message
+          end
+
+          if response.is_a? Net::HTTPClientError
+            @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
+            return
+          end
+        rescue Net::HTTPBadResponse, RetryableError => e
+          # indicates a protocol error
+          if retries < MAX_RETRIES  
+            sleep_seconds = 2 ** retries
+            @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.")
+            sleep sleep_seconds
+            retries += 1
+            retry
+          else
+            @logger.error("Failed to export logs to Dynatrace.")
+          end
+        end
+      end
+
+      def send(request)
+        @client.request(request)
       end
     end
   end
