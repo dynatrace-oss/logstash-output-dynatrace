@@ -20,6 +20,7 @@ require 'logstash/event'
 require 'sinatra'
 require 'insist'
 require 'net/http'
+require 'json'
 
 describe LogStash::Outputs::Dynatrace do
   let(:events) do
