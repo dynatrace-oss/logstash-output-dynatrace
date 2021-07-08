@@ -31,8 +31,6 @@ module LogStash
 
       config_name 'dynatrace'
 
-      concurrency :single
-
       # The full URL of the Dynatrace log ingestion endpoint:
       # - on SaaS:    https://{your-environment-id}.live.dynatrace.com/api/v2/logs/ingest
       # - on Managed: https://{your-domain}/e/{your-environment-id}/api/v2/logs/ingest
