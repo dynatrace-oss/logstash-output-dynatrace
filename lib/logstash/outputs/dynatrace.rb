@@ -84,6 +84,11 @@ module LogStash
             raise RetryableError.new failure_message
           end
 
+          if response.is_a? Net::HTTPBadRequest
+            @logger.error("#{failure_message} Incorrectly formatted message.")
+            return
+          end
+
           if response.is_a? Net::HTTPClientError
             @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
             return
