@@ -85,6 +85,18 @@ describe LogStash::Outputs::Dynatrace do
       subject.multi_receive(events)
       expect(subject).to have_received(:send)
     end
+
+    it 'does not log on success' do
+      allow(subject.logger).to receive(:debug) { raise "should not log" }
+      allow(subject.logger).to receive(:info) { raise "should not log" }
+      allow(subject.logger).to receive(:error) { raise "should not log" }
+      allow(subject.logger).to receive(:warn) { raise "should not log" }
+      allow(subject).to receive(:send) do |req|
+        Net::HTTPOK.new "1.1", "200", "OK"
+      end
+      subject.multi_receive(events)
+      expect(subject).to have_received(:send)
+    end
   end
 
   context 'with bad client request' do
