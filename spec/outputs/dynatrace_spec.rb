@@ -87,7 +87,7 @@ describe LogStash::Outputs::Dynatrace do
     end
 
     it 'does not log on success' do
-      allow(subject.logger).to receive(:debug) { raise "should not log" }
+      allow(subject.logger).to receive(:debug)
       allow(subject.logger).to receive(:info) { raise "should not log" }
       allow(subject.logger).to receive(:error) { raise "should not log" }
       allow(subject.logger).to receive(:warn) { raise "should not log" }
