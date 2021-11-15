@@ -83,7 +83,6 @@ module LogStash
           failure_message = "Dynatrace returned #{response.code} #{response.message}."
 
           if response.is_a? Net::HTTPServerError
-            @logger.debug("Server returned an error")
             raise RetryableError.new failure_message
           end
 
