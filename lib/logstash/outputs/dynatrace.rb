@@ -47,6 +47,7 @@ module LogStash
       attr_accessor :uri, :plugin_version
 
       def register
+        @logger.debug("Registering plugin")
         require 'net/https'
         require 'uri'
         @uri = URI.parse(@ingest_endpoint_url.uri.to_s)
@@ -69,6 +70,7 @@ module LogStash
 
       # Takes an array of events
       def multi_receive(events)
+        @logger.debug("Received #{events.length} events")
         return if events.length.zero?
 
         retries = 0
@@ -93,6 +95,8 @@ module LogStash
             @logger.error(failure_message)
             return
           end
+
+          @logger.debug("successfully sent #{events.length} events")
         rescue Net::HTTPBadResponse, RetryableError => e
           # indicates a protocol error
           if retries < MAX_RETRIES  
@@ -103,8 +107,11 @@ module LogStash
             retry
           else
             @logger.error("Failed to export logs to Dynatrace.")
+            return
           end
         end
+
+        @logger.debug("Successfully exported #{events.length} events with #{retries} retries")
       end
 
       def send(request)
