@@ -7,6 +7,7 @@
 - [Installation](#installation)
 - [Example Configuration](#example-configuration)
 - [Configuration Overview](#configuration-overview)
+  - [Dynatrace-Specific Options](#dynatrace-specific-options)
   - [Common Options](#common-options)
 - [Configuration Detail](#configuration-detail)
   - [`ingest_endpoint_url`](#ingest_endpoint_url)
@@ -18,6 +19,7 @@
 
 A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 Please review the documentation for this API before using the plugin.
+
 ## Installation
 
 Logstash is typically installed in the `/usr/share/logstash` directory, and plugins are installed using the `/usr/share/logstash/bin/logstash-plugin` command.
@@ -31,7 +33,7 @@ If your logstash installation directory is different than this, your `logstash-p
 
 See below for a detailed explanation of the options used in this example configuration.
 
-```
+```ruby
 output {
   dynatrace {
     id => "dynatrace_output"
@@ -44,6 +46,8 @@ output {
 ## Configuration Overview
 
 The following configuration options are supported by the Dynatrace output plugin as well as the common options supported by all output plugins described below.
+
+### Dynatrace-Specific Options
 
 
 | Setting                                       | Input Type                                                                                            | Required |
@@ -96,7 +100,7 @@ This option may be required if you are using a self-signed certificate, an expir
 
 * Value type is codec
 * Default value is "plain"
-* 
+
 The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
 
 ### `enable_metric`
@@ -111,9 +115,9 @@ Disable or enable metric logging for this specific plugin instance. By default w
 * Value type is string
 * There is no default value for this setting.
 
-Add a unique ID to the plugin configuration. If no ID is specified, Logstash will generate one. It is strongly recommended to set this ID in your configuration. This is particularly useful when you have two or more plugins of the same type. For example, if you have 2 datadog_metrics outputs. Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
+Add a unique ID to the plugin configuration. If no ID is specified, Logstash will generate one. It is strongly recommended to set this ID in your configuration. This is particularly useful when you have two or more plugins of the same type. For example, if you have 2 dynatrace outputs. Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
 
-```
+```ruby
 output {
   dynatrace {
     id => "my_plugin_id"
