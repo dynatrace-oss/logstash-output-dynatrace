@@ -105,7 +105,7 @@ The codec used for output data. Output codecs are a convenient method for encodi
 
 ### `enable_metric`
 
-* Value type is boolean
+ * Value type is [boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean)
 * Default value is true
 
 Disable or enable metric logging for this specific plugin instance. By default we record all the metrics we can, but you can disable metrics collection for a specific plugin.
