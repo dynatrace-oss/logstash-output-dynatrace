@@ -17,7 +17,7 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
-require_relative '../../version'
+require 'dynatrace_version'
 
 MAX_RETRIES = 5
 
@@ -117,5 +117,12 @@ module LogStash
         @client.request(request)
       end
     end
+  end
+end
+
+module LogStash
+  module DynatraceConstants
+    ## Current Dynatrace Output version
+    VERSION = '0.2.1'
   end
 end
