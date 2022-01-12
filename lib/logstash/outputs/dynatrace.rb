@@ -17,7 +17,7 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
-require 'dynatrace_constants'
+require 'dynatrace/constants'
 
 MAX_RETRIES = 5
 
@@ -28,6 +28,8 @@ module LogStash
 
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
+      @plugin_version = ::Dynatrace::Constants::VERSION
+
       config_name 'dynatrace'
 
       # The full URL of the Dynatrace log ingestion endpoint:
@@ -43,7 +45,7 @@ module LogStash
 
       default :codec, 'json'
 
-      attr_accessor :uri
+      attr_accessor :uri, :plugin_version
 
       def register
         @logger.debug("Registering plugin")
@@ -61,7 +63,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => "logstash-output-dynatrace v#{LogStash::DynatraceConstants::VERSION}",
+          'User-Agent' => "logstash-output-dynatrace v#{@plugin_version}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }
@@ -117,12 +119,5 @@ module LogStash
         @client.request(request)
       end
     end
-  end
-end
-
-module LogStash
-  module DynatraceConstants
-    ## Current Dynatrace Output version
-    VERSION = '0.2.1'
   end
 end

@@ -14,11 +14,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'lib/dynatrace_constants')
+lib = File.expand_path('lib', __dir__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'dynatrace/constants'
 
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
-  s.version = LogStash::DynatraceConstants::VERSION
+  s.version = Dynatrace::Constants::VERSION
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
   s.description = <<-EOF
     This gem is a Logstash plugin required to be installed on top of the Logstash
@@ -32,8 +34,8 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   # Files
-  s.files = Dir['lib/*', 'lib/**/*', 'spec/**/*', 'vendor/**/*', '*.gemspec', '*.md', 'CONTRIBUTORS', 'Gemfile', 'LICENSE',
-                'NOTICE.TXT']
+  s.files = Dir['lib/**/*', 'spec/**/*', 'vendor/**/*', '*.gemspec', '*.md', 'CONTRIBUTORS', 'Gemfile', 'LICENSE',
+                'NOTICE.TXT', 'VERSION']
   # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 

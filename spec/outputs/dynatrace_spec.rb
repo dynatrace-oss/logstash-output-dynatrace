@@ -35,6 +35,7 @@ describe LogStash::Outputs::Dynatrace do
 
   before do
     subject.register
+    subject.plugin_version = "1.2.3"
   end
 
   it 'does not send empty events' do
@@ -78,7 +79,7 @@ describe LogStash::Outputs::Dynatrace do
 
     it 'includes user agent' do
       allow(subject).to receive(:send) do |req|
-        expect(req['User-Agent']).to eql("logstash-output-dynatrace v#{LogStash::DynatraceConstants::VERSION}")
+        expect(req['User-Agent']).to eql('logstash-output-dynatrace v1.2.3')
         Net::HTTPOK.new "1.1", "200", "OK"
       end
       subject.multi_receive(events)
