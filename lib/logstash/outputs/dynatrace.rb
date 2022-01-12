@@ -17,7 +17,7 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
-require 'dynatrace_version'
+require 'dynatrace_constants'
 
 MAX_RETRIES = 5
 

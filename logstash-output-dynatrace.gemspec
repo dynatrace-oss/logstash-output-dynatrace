@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require File.join(File.expand_path(File.dirname(__FILE__)), 'lib/version')
+require File.join(File.expand_path(File.dirname(__FILE__)), 'lib/dynatrace_constants')
 
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
