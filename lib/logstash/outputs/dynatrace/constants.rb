@@ -14,8 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-module Dynatrace
-  module Constants
-    VERSION = '0.2.1'
+module Logstash
+  module Outputs
+    module Dynatrace
+      module Constants
+        VERSION = '0.2.1'
+      end
+    end
   end
 end
