@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require './lib/version'
+require_relative './lib/version'
 
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
