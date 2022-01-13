@@ -141,7 +141,7 @@ in order to isolate problems caused by only the Dynatrace output plugin.
 
 ### Enable Debug Logs
 
-https://www.elastic.co/guide/en/logstash/current/logging.html#logging
+See <https://www.elastic.co/guide/en/logstash/current/logging.html#logging>.
 
 You can enable debug logging in one of several ways:
 
