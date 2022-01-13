@@ -4,7 +4,8 @@
 
 > This project is developed and maintained by Dynatrace R&D.
 
-- [Installation](#installation)
+- [Installation Prerequisites](#installation-prerequisites)
+- [Installation Steps](#installation-steps)
 - [Example Configuration](#example-configuration)
 - [Configuration Overview](#configuration-overview)
   - [Dynatrace-Specific Options](#dynatrace-specific-options)
@@ -16,11 +17,17 @@
   - [`codec`](#codec)
   - [`enable_metric`](#enable_metric)
   - [`id`](#id)
+- [Troubleshooting issues](#troubleshooting-issues)
+  - [Enable Debug Logs](#enable-debug-logs)
 
 A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 Please review the documentation for this API before using the plugin.
 
-## Installation
+## Installation Prerequisites
+
+- Logstash 7.6+
+
+## Installation Steps
 
 Logstash is typically installed in the `/usr/share/logstash` directory, and plugins are installed using the `/usr/share/logstash/bin/logstash-plugin` command.
 If your logstash installation directory is different than this, your `logstash-plugin` command may be in a different location.
@@ -124,3 +131,20 @@ output {
   }
 }
 ```
+
+## Troubleshooting issues
+
+When troubleshooting, always try to reduce the configuration as much as possible.
+It is recommended to disable all plugins except the Dynatrace output plugin and
+a simple input plugin like the [http input plugin](https://www.elastic.co/guide/en/logstash/current/plugins-inputs-http.html)
+in order to isolate problems caused by only the Dynatrace output plugin.
+
+### Enable Debug Logs
+
+See <https://www.elastic.co/guide/en/logstash/current/logging.html#logging>.
+
+You can enable debug logging in one of several ways:
+
+- Use the `--log.level debug` command line flag
+- Configure the `log4j2.properties` file (usually in `/etc/logstash`) - More info [here](https://www.elastic.co/guide/en/logstash/current/logging.html#log4j2)
+- Use the logging API - details [here](https://www.elastic.co/guide/en/logstash/current/logging.html#_update_logging_levels)
