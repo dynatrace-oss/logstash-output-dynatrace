@@ -4,8 +4,8 @@
 
 > This project is developed and maintained by Dynatrace R&D.
 
-- [Installation](#installation)
-  - [Prerequisites](#prerequisites)
+- [Installation Prerequisites](#installation-prerequisites)
+- [Installation Steps](#installation-steps)
 - [Example Configuration](#example-configuration)
 - [Configuration Overview](#configuration-overview)
   - [Dynatrace-Specific Options](#dynatrace-specific-options)
@@ -23,11 +23,11 @@
 A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
 Please review the documentation for this API before using the plugin.
 
-## Installation
-
-### Prerequisites
+## Installation Prerequisites
 
 - Logstash 7.6+
+
+## Installation Steps
 
 Logstash is typically installed in the `/usr/share/logstash` directory, and plugins are installed using the `/usr/share/logstash/bin/logstash-plugin` command.
 If your logstash installation directory is different than this, your `logstash-plugin` command may be in a different location.
