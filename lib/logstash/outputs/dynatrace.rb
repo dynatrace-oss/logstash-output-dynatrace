@@ -17,9 +17,9 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
-require_relative '../../../version'
 
 MAX_RETRIES = 5
+VERSION = '0.2.1'
 
 module LogStash
   module Outputs
@@ -28,8 +28,6 @@ module LogStash
 
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
-      @plugin_version = ::DynatraceConstants::VERSION
-
       config_name 'dynatrace'
 
       # The full URL of the Dynatrace log ingestion endpoint:
@@ -63,7 +61,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => "logstash-output-dynatrace v#{@plugin_version}",
+          'User-Agent' => "logstash-output-dynatrace v#{VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }

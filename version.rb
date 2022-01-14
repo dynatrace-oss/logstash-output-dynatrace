@@ -15,5 +15,6 @@
 # limitations under the License.
 
 module DynatraceConstants
+  # Also required to change the version in lib/logstash/outputs/dynatrace.rb
   VERSION = '0.2.1'
 end
