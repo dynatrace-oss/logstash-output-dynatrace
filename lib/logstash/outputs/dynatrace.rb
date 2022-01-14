@@ -61,7 +61,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => "logstash-output-dynatrace v#{PLUGIN_VERSION}",
+          'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }
