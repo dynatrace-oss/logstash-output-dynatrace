@@ -17,6 +17,7 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
+require_relative '../../../version'
 
 MAX_RETRIES = 5
 
@@ -27,7 +28,7 @@ module LogStash
 
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
-      @plugin_version = ::File.read(::File.expand_path('../../../VERSION', __dir__)).strip
+      @plugin_version = ::DynatraceConstants::VERSION
 
       config_name 'dynatrace'
 
