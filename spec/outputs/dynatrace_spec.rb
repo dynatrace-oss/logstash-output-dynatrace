@@ -79,7 +79,7 @@ describe LogStash::Outputs::Dynatrace do
 
     it 'includes user agent' do
       allow(subject).to receive(:send) do |req|
-        expect(req['User-Agent']).to eql("logstash-output-dynatrace v#{::DynatraceConstants::VERSION}")
+        expect(req['User-Agent']).to eql("logstash-output-dynatrace/#{::DynatraceConstants::VERSION}")
         Net::HTTPOK.new "1.1", "200", "OK"
       end
       subject.multi_receive(events)
