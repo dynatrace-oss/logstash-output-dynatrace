@@ -19,7 +19,7 @@ require 'logstash/outputs/base'
 require 'logstash/json'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.2.1'
+PLUGIN_VERSION = '0.2.2'
 
 module LogStash
   module Outputs
@@ -61,7 +61,7 @@ module LogStash
 
       def headers
         {
-          'User-Agent' => "logstash-output-dynatrace v#{PLUGIN_VERSION}",
+          'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key}"
         }
