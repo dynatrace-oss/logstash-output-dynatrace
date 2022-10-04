@@ -137,7 +137,8 @@ describe LogStash::Outputs::Dynatrace do
       allow(subject).to receive(:send).and_return(response)
       subject.multi_receive(events)
 
-      expect(subject.logger).to have_received(:error).with("Encountered an HTTP client error in HTTP output", {:body=>"this is a failure", :code=>"400"})
+      expect(subject.logger).to have_received(:error).with("Encountered an HTTP client error in HTTP output",
+        {:body=>"this is a failure", :code=>"400", :message=> "Client error"})
     end
   end
 end

@@ -90,7 +90,7 @@ module LogStash
               @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
               return
             end
-            @logger.error("Encountered an HTTP client error in HTTP output", :code => response.code, :body => response.body)
+            @logger.error("Encountered a client error in HTTP output", :message => response.message, :code => response.code, :body => response.body)
             return
           end
 
