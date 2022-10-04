@@ -101,9 +101,11 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'with bad client request' do
     it 'does not retry on 404' do
+      # allow(subject.logger).to receive(:error)
       allow(subject).to receive(:send) { Net::HTTPNotFound.new "1.1", "404", "Not Found" }
       subject.multi_receive(events)
       expect(subject).to have_received(:send).once
+      # expect(subject.logger).to have_received(:error).with("test")
     end
   end
 
@@ -122,6 +124,22 @@ describe LogStash::Outputs::Dynatrace do
 
       expect(subject).to have_received(:sleep).exactly(5).times
       expect(subject).to have_received(:send).exactly(6).times
+    end
+  end
+
+  context 'with client error' do
+    let(:response){ instance_double(Net::HTTPClientError, body: response_body, code: response_code, message: response_message)}
+    let(:response_body) { "this is a failure" }
+    let(:response_message) { "Client error" }
+    let(:response_code) { "400" }
+
+
+    it 'logs the response body' do
+      allow(subject.logger).to receive(:error)
+      allow(subject).to receive(:send).and_return(response)
+      subject.multi_receive(events)
+
+      expect(subject.logger).to have_received(:error).with("Encountered an HTTP client error in HTTP output", {:body=>"this is a failure", :code=>"400"})
     end
   end
 end

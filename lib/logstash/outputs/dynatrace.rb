@@ -77,21 +77,20 @@ module LogStash
           request = Net::HTTP::Post.new(uri, headers)
           request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
           response = send(request)
-          return if response.is_a? Net::HTTPSuccess
+          return if response.code == '200'
 
           failure_message = "Dynatrace returned #{response.code} #{response.message}."
 
-          if response.is_a? Net::HTTPServerError
+          if response.code.start_with?('5')
             raise RetryableError.new failure_message
           end
 
-          if response.is_a? Net::HTTPNotFound
-            @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
-            return
-          end
-
-          if response.is_a? Net::HTTPClientError
-            @logger.error(failure_message)
+          if response.code.start_with?('4')
+            if response.code == '404'
+              @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
+              return
+            end
+            @logger.error("Encountered an HTTP client error in HTTP output", :code => response.code, :body => response.body)
             return
           end
 
