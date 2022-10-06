@@ -80,7 +80,7 @@ module LogStash
 
           case response
           when Net::HTTPSuccess
-            @logger.debug("successfully sent #{events.length} events #{"with #{retries} retries" if retries > 0}")
+            @logger.debug("successfully sent #{events.length} events#{" with #{retries} retries" if retries > 0}")
           when Net::HTTPServerError
             @logger.error("Encountered an HTTP server error", :message => response.message, :code => response.code, :body => response.body) if retries == 0
           when Net::HTTPNotFound
