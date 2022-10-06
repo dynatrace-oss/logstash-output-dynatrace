@@ -30,7 +30,9 @@ describe LogStash::Outputs::Dynatrace do
   end
   let(:url) { "http://localhost/good" }
   let(:key) { 'api.key' }
+
   let(:subject) { LogStash::Outputs::Dynatrace.new({ 'api_key' => key, 'ingest_endpoint_url' => url }) }
+  let(:client) { subject.instance_variable_get(:@client) }
 
   let(:ok) { Net::HTTPOK.new "1.1", "200", "OK" }
   let(:server_error) { Net::HTTPServerError.new "1.1", "500", "Internal Server Error" }
@@ -42,13 +44,13 @@ describe LogStash::Outputs::Dynatrace do
   end
 
   it 'does not send empty events' do
-    expect_any_instance_of(Net::HTTP).to_not receive(:request)
+    expect(client).to_not receive(:request)
     subject.multi_receive([])
   end
 
   context 'server response success' do
     it 'sends events' do
-      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
+      expect(client).to receive(:request) do |req|
         body = JSON.parse(req.body)
         expect(body.length).to eql(2)
         expect(body[0]['message']).to eql('message 1')
@@ -61,7 +63,7 @@ describe LogStash::Outputs::Dynatrace do
     end
 
     it 'includes authorization header' do
-      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
+      expect(client).to receive(:request) do |req|
         expect(req['Authorization']).to eql("Api-Token #{key}")
         ok
       end
@@ -69,7 +71,7 @@ describe LogStash::Outputs::Dynatrace do
     end
 
     it 'includes content type header' do
-      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
+      expect(client).to receive(:request) do |req|
         expect(req['Content-Type']).to eql('application/json; charset=utf-8')
         ok
       end
@@ -77,7 +79,7 @@ describe LogStash::Outputs::Dynatrace do
     end
 
     it 'includes user agent' do
-      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
+      expect(client).to receive(:request) do |req|
         expect(req['User-Agent']).to eql("logstash-output-dynatrace/#{::DynatraceConstants::VERSION}")
         ok
       end
@@ -90,7 +92,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject.logger).to_not receive(:error)
       expect(subject.logger).to_not receive(:warn)
       response = ok
-      expect_any_instance_of(Net::HTTP).to receive(:request) { response }
+      expect(client).to receive(:request) { response }
       subject.multi_receive(events)
     end
   end
@@ -100,7 +102,7 @@ describe LogStash::Outputs::Dynatrace do
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
       expect(server_error).to receive(:body) { 'this is a failure' }.once
       expect(subject.logger).to receive(:error).with("Encountered an HTTP server error", {:body=>"this is a failure", :code=>"500", :message=> "Internal Server Error"}).once
-      expect_any_instance_of(Net::HTTP).to receive(:request) { server_error }.exactly(6).times
+      expect(client).to receive(:request) { server_error }.exactly(6).times
 
 
       expect(subject).to receive(:sleep).with(1).ordered
@@ -117,12 +119,12 @@ describe LogStash::Outputs::Dynatrace do
   context 'with client error' do
     it 'does not retry on 404' do
       allow(subject.logger).to receive(:error)
-      expect_any_instance_of(Net::HTTP).to receive(:request) { not_found }.once
+      expect(client).to receive(:request) { not_found }.once
       subject.multi_receive(events)
     end
 
     it 'logs the response body' do
-      expect_any_instance_of(Net::HTTP).to receive(:request) { client_error }
+      expect(client).to receive(:request) { client_error }
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
       expect(client_error).to receive(:body) { 'this is a failure' }
 
