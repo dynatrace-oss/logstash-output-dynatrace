@@ -16,5 +16,5 @@
 
 module DynatraceConstants
   # Also required to change the version in lib/logstash/outputs/dynatrace.rb
-  VERSION = '0.2.2'
+  VERSION = '0.3.0'
 end

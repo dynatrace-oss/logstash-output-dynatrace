@@ -19,7 +19,7 @@ require 'logstash/outputs/base'
 require 'logstash/json'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.2.2'
+PLUGIN_VERSION = '0.3.0'
 
 module LogStash
   module Outputs
@@ -76,29 +76,26 @@ module LogStash
         begin
           request = Net::HTTP::Post.new(uri, headers)
           request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
-          response = send(request)
-          return if response.is_a? Net::HTTPSuccess
+          response = @client.request(request)
 
-          failure_message = "Dynatrace returned #{response.code} #{response.message}."
-
-          if response.is_a? Net::HTTPServerError
-            raise RetryableError.new failure_message
+          case response
+          when Net::HTTPSuccess
+            @logger.debug("successfully sent #{events.length} events#{" with #{retries} retries" if retries > 0}")
+          when Net::HTTPServerError
+            @logger.error("Encountered an HTTP server error", :message => response.message, :code => response.code, :body => response.body) if retries == 0
+          when Net::HTTPNotFound
+            @logger.error("Encountered a 404 Not Found error. Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.", :message => response.message, :code => response.code)
+          when Net::HTTPClientError
+            @logger.error("Encountered an HTTP client error", :message => response.message, :code => response.code, :body => response.body)
+          else
+            @logger.error("Encountered an unexpected response code", :message => response.message, :code => response.code)
           end
 
-          if response.is_a? Net::HTTPNotFound
-            @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
-            return
-          end
+          raise RetryableError.new "code #{response.code}" if retryable(response)
 
-          if response.is_a? Net::HTTPClientError
-            @logger.error(failure_message)
-            return
-          end
-
-          @logger.debug("successfully sent #{events.length} events")
         rescue Net::HTTPBadResponse, RetryableError => e
           # indicates a protocol error
-          if retries < MAX_RETRIES  
+          if retries < MAX_RETRIES
             sleep_seconds = 2 ** retries
             @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.")
             sleep sleep_seconds
@@ -109,12 +106,10 @@ module LogStash
             return
           end
         end
-
-        @logger.debug("Successfully exported #{events.length} events with #{retries} retries")
       end
 
-      def send(request)
-        @client.request(request)
+      def retryable(response)
+        return response.is_a? Net::HTTPServerError
       end
     end
   end
