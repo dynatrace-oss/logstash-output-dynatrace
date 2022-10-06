@@ -106,8 +106,6 @@ module LogStash
             return
           end
         end
-
-        @logger.debug("Successfully exported #{events.length} events with #{retries} retries")
       end
 
       def retryable(response)
