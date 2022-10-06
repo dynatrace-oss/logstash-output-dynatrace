@@ -39,6 +39,8 @@ describe LogStash::Outputs::Dynatrace do
   let(:client_error) { Net::HTTPClientError.new("1.1", '400', 'Client error') }
   let(:not_found) { Net::HTTPNotFound.new "1.1", "404", "Not Found" }
 
+  let(:body) { "this is a failure" }
+
   before do
     subject.register
   end
@@ -99,8 +101,8 @@ describe LogStash::Outputs::Dynatrace do
   context 'with server error' do
     it 'retries 5 times with exponential backoff' do
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
-      expect(server_error).to receive(:body) { 'this is a failure' }.once
-      expect(subject.logger).to receive(:error).with("Encountered an HTTP server error", {:body=>"this is a failure", :code=>"500", :message=> "Internal Server Error"}).once
+      expect(server_error).to receive(:body) { body }.once
+      expect(subject.logger).to receive(:error).with("Encountered an HTTP server error", {:body=>body, :code=>"500", :message=> "Internal Server Error"}).once
       expect(client).to receive(:request) { server_error }.exactly(6).times
 
 
@@ -109,7 +111,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject).to receive(:sleep).with(4).ordered
       expect(subject).to receive(:sleep).with(8).ordered
       expect(subject).to receive(:sleep).with(16).ordered
-      
+
       expect(subject.logger).to receive(:error).with("Failed to export logs to Dynatrace.")
       subject.multi_receive(events)
     end
@@ -125,10 +127,10 @@ describe LogStash::Outputs::Dynatrace do
     it 'logs the response body' do
       expect(client).to receive(:request) { client_error }
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
-      expect(client_error).to receive(:body) { 'this is a failure' }
+      expect(client_error).to receive(:body) { body }
 
       expect(subject.logger).to receive(:error).with("Encountered an HTTP client error",
-        {:body=>"this is a failure", :code=>"400", :message=> "Client error"})
+        {:body=>body, :code=>"400", :message=> "Client error"})
 
       subject.multi_receive(events)
     end
