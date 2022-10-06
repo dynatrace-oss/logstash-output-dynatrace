@@ -126,7 +126,7 @@ describe LogStash::Outputs::Dynatrace do
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
       expect(response).to receive(:body) { 'this is a failure' }
 
-      expect(subject.logger).to receive(:error).with("Encountered a client error in HTTP output",
+      expect(subject.logger).to receive(:error).with("Encountered an HTTP client error",
         {:body=>"this is a failure", :code=>"400", :message=> "Client error"})
 
       subject.multi_receive(events)

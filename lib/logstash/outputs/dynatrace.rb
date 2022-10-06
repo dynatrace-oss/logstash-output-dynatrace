@@ -78,17 +78,19 @@ module LogStash
           request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
           response = @client.request(request)
 
-
           case response
           when Net::HTTPSuccess
           when Net::HTTPServerError
-            raise RetryableError.new "Dynatrace returned #{response.code} #{response.message}."
+            raise RetryableError.new "Encountered an HTTP server error #{response.code} #{response.message}."
           when Net::HTTPNotFound
-            @logger.error("Dynatrace returned #{response.code} #{response.message}. Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
+            @logger.error("Encountered a 404 Not Found error. Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.", :message => response.message, :code => response.code)
+            return
           when Net::HTTPClientError
-            @logger.error("Encountered a client error in HTTP output", :message => response.message, :code => response.code, :body => response.body)
+            @logger.error("Encountered an HTTP client error", :message => response.message, :code => response.code, :body => response.body)
+            return
           else
-            @logger.error("Dynatrace returned #{response.code} #{response.message}.")
+            @logger.error("Encountered an unexpected response code", :message => response.message, :code => response.code)
+            return
           end
 
           @logger.debug("successfully sent #{events.length} events")
@@ -101,7 +103,7 @@ module LogStash
             retries += 1
             retry
           else
-            @logger.error("Failed to export logs to Dynatrace.")
+            @logger.error("Failed to export logs to Dynatrace.", :error => e)
             return
           end
         end
