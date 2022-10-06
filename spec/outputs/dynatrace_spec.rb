@@ -32,6 +32,11 @@ describe LogStash::Outputs::Dynatrace do
   let(:key) { 'api.key' }
   let(:subject) { LogStash::Outputs::Dynatrace.new({ 'api_key' => key, 'ingest_endpoint_url' => url }) }
 
+  let(:ok) { Net::HTTPOK.new "1.1", "200", "OK" }
+  let(:server_error) { Net::HTTPServerError.new "1.1", "500", "Internal Server Error" }
+  let(:client_error) { Net::HTTPClientError.new("1.1", '400', 'Client error') }
+  let(:not_found) { Net::HTTPNotFound.new "1.1", "404", "Not Found" }
+
   before do
     subject.register
   end
@@ -43,7 +48,6 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'server response success' do
     it 'sends events' do
-      response = Net::HTTPOK.new "1.1", "200", "OK"
       expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         body = JSON.parse(req.body)
         expect(body.length).to eql(2)
@@ -51,44 +55,41 @@ describe LogStash::Outputs::Dynatrace do
         expect(body[0]['@timestamp']).to eql('2021-06-25T15:46:45.693Z')
         expect(body[1]['message']).to eql('message 2')
         expect(body[1]['@timestamp']).to eql('2021-06-25T15:46:46.693Z')
-        response
+        ok
       end
       subject.multi_receive(events)
     end
 
     it 'includes authorization header' do
-      response = Net::HTTPOK.new "1.1", "200", "OK"
       expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['Authorization']).to eql("Api-Token #{key}")
-        response
+        ok
       end
       subject.multi_receive(events)
     end
 
     it 'includes content type header' do
-      response = Net::HTTPOK.new "1.1", "200", "OK"
       expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['Content-Type']).to eql('application/json; charset=utf-8')
-        response
+        ok
       end
       subject.multi_receive(events)
     end
 
     it 'includes user agent' do
-      response = Net::HTTPOK.new "1.1", "200", "OK"
       expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['User-Agent']).to eql("logstash-output-dynatrace/#{::DynatraceConstants::VERSION}")
-        response
+        ok
       end
       subject.multi_receive(events)
     end
 
     it 'does not log on success' do
       allow(subject.logger).to receive(:debug)
-      allow(subject.logger).to receive(:info) { raise "should not log" }
-      allow(subject.logger).to receive(:error) { raise "should not log" }
-      allow(subject.logger).to receive(:warn) { raise "should not log" }
-      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect(subject.logger).to_not receive(:info)
+      expect(subject.logger).to_not receive(:error)
+      expect(subject.logger).to_not receive(:warn)
+      response = ok
       expect_any_instance_of(Net::HTTP).to receive(:request) { response }
       subject.multi_receive(events)
     end
@@ -96,11 +97,10 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'with server error' do
     it 'retries 5 times with exponential backoff' do
-      response = Net::HTTPServerError.new "1.1", "500", "Internal Server Error"
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
-      expect(response).to receive(:body) { 'this is a failure' }.once
+      expect(server_error).to receive(:body) { 'this is a failure' }.once
       expect(subject.logger).to receive(:error).with("Encountered an HTTP server error", {:body=>"this is a failure", :code=>"500", :message=> "Internal Server Error"}).once
-      expect_any_instance_of(Net::HTTP).to receive(:request) { response }.exactly(6).times
+      expect_any_instance_of(Net::HTTP).to receive(:request) { server_error }.exactly(6).times
 
 
       expect(subject).to receive(:sleep).with(1).ordered
@@ -117,16 +117,14 @@ describe LogStash::Outputs::Dynatrace do
   context 'with client error' do
     it 'does not retry on 404' do
       allow(subject.logger).to receive(:error)
-      response = Net::HTTPNotFound.new "1.1", "404", "Not Found"
-      expect_any_instance_of(Net::HTTP).to receive(:request) { response }.once
+      expect_any_instance_of(Net::HTTP).to receive(:request) { not_found }.once
       subject.multi_receive(events)
     end
 
     it 'logs the response body' do
-      response = Net::HTTPClientError.new(1.0, '400', 'Client error')
-      expect_any_instance_of(Net::HTTP).to receive(:request) { response }
+      expect_any_instance_of(Net::HTTP).to receive(:request) { client_error }
       # This prevents the elusive "undefined method `close' for nil:NilClass" error.
-      expect(response).to receive(:body) { 'this is a failure' }
+      expect(client_error).to receive(:body) { 'this is a failure' }
 
       expect(subject.logger).to receive(:error).with("Encountered an HTTP client error",
         {:body=>"this is a failure", :code=>"400", :message=> "Client error"})
