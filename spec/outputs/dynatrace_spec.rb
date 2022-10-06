@@ -18,8 +18,6 @@ require_relative '../spec_helper'
 require_relative '../../version'
 require 'logstash/codecs/plain'
 require 'logstash/event'
-require 'sinatra'
-require 'insist'
 require 'net/http'
 require 'json'
 
@@ -39,51 +37,50 @@ describe LogStash::Outputs::Dynatrace do
   end
 
   it 'does not send empty events' do
-    allow(subject).to receive(:send)
+    expect_any_instance_of(Net::HTTP).to_not receive(:request)
     subject.multi_receive([])
-    expect(subject).to_not have_received(:send)
   end
 
   context 'server response success' do
     it 'sends events' do
-      allow(subject).to receive(:send) do |req|
+      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         body = JSON.parse(req.body)
         expect(body.length).to eql(2)
         expect(body[0]['message']).to eql('message 1')
         expect(body[0]['@timestamp']).to eql('2021-06-25T15:46:45.693Z')
         expect(body[1]['message']).to eql('message 2')
         expect(body[1]['@timestamp']).to eql('2021-06-25T15:46:46.693Z')
-        Net::HTTPOK.new "1.1", "200", "OK"
+        response
       end
       subject.multi_receive(events)
-      expect(subject).to have_received(:send)
     end
 
     it 'includes authorization header' do
-      allow(subject).to receive(:send) do |req|
+      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['Authorization']).to eql("Api-Token #{key}")
-        Net::HTTPOK.new "1.1", "200", "OK"
+        response
       end
       subject.multi_receive(events)
-      expect(subject).to have_received(:send)
     end
 
     it 'includes content type header' do
-      allow(subject).to receive(:send) do |req|
+      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['Content-Type']).to eql('application/json; charset=utf-8')
-        Net::HTTPOK.new "1.1", "200", "OK"
+        response
       end
       subject.multi_receive(events)
-      expect(subject).to have_received(:send)
     end
 
     it 'includes user agent' do
-      allow(subject).to receive(:send) do |req|
+      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect_any_instance_of(Net::HTTP).to receive(:request) do |http, req|
         expect(req['User-Agent']).to eql("logstash-output-dynatrace/#{::DynatraceConstants::VERSION}")
-        Net::HTTPOK.new "1.1", "200", "OK"
+        response
       end
       subject.multi_receive(events)
-      expect(subject).to have_received(:send)
     end
 
     it 'does not log on success' do
@@ -91,54 +88,48 @@ describe LogStash::Outputs::Dynatrace do
       allow(subject.logger).to receive(:info) { raise "should not log" }
       allow(subject.logger).to receive(:error) { raise "should not log" }
       allow(subject.logger).to receive(:warn) { raise "should not log" }
-      allow(subject).to receive(:send) do |req|
-        Net::HTTPOK.new "1.1", "200", "OK"
-      end
+      response = Net::HTTPOK.new "1.1", "200", "OK"
+      expect_any_instance_of(Net::HTTP).to receive(:request) { response }
       subject.multi_receive(events)
-      expect(subject).to have_received(:send)
-    end
-  end
-
-  context 'with bad client request' do
-    it 'does not retry on 404' do
-      allow(subject).to receive(:send) { Net::HTTPNotFound.new "1.1", "404", "Not Found" }
-      subject.multi_receive(events)
-      expect(subject).to have_received(:send).once
     end
   end
 
   context 'with server error' do
     it 'retries 5 times with exponential backoff' do
       allow(subject).to receive(:sleep)
-      allow(subject).to receive(:send) { Net::HTTPInternalServerError.new "1.1", "500", "Internal Server Error" }
+      response = Net::HTTPServerError.new "1.1", "500", "Internal Server Error"
+      expect_any_instance_of(Net::HTTP).to receive(:request) { response }.exactly(6).times
+
+
+      expect(subject).to receive(:sleep).with(1).ordered
+      expect(subject).to receive(:sleep).with(2).ordered
+      expect(subject).to receive(:sleep).with(4).ordered
+      expect(subject).to receive(:sleep).with(8).ordered
+      expect(subject).to receive(:sleep).with(16).ordered
+      # should not be called again
+      expect(subject).not_to receive(:sleep)
 
       subject.multi_receive(events)
-
-      expect(subject).to have_received(:sleep).with(1).ordered
-      expect(subject).to have_received(:sleep).with(2).ordered
-      expect(subject).to have_received(:sleep).with(4).ordered
-      expect(subject).to have_received(:sleep).with(8).ordered
-      expect(subject).to have_received(:sleep).with(16).ordered
-
-      expect(subject).to have_received(:sleep).exactly(5).times
-      expect(subject).to have_received(:send).exactly(6).times
     end
   end
 
   context 'with client error' do
-    let(:response){ instance_double(Net::HTTPClientError, body: response_body, code: response_code, message: response_message)}
-    let(:response_body) { "this is a failure" }
-    let(:response_message) { "Client error" }
-    let(:response_code) { "400" }
-
+    it 'does not retry on 404' do
+      response = Net::HTTPNotFound.new "1.1", "404", "Not Found"
+      expect_any_instance_of(Net::HTTP).to receive(:request) { response }.once
+      subject.multi_receive(events)
+    end
 
     it 'logs the response body' do
-      allow(subject.logger).to receive(:error)
-      allow(subject).to receive(:send).and_return(response)
-      subject.multi_receive(events)
+      response = Net::HTTPClientError.new(1.0, '400', 'Client error')
+      expect_any_instance_of(Net::HTTP).to receive(:request) { response }
+      # This prevents the elusive "undefined method `close' for nil:NilClass" error.
+      expect(response).to receive(:body) { 'this is a failure' }
 
-      expect(subject.logger).to have_received(:error).with("Encountered a client error in HTTP output",
+      expect(subject.logger).to receive(:error).with("Encountered a client error in HTTP output",
         {:body=>"this is a failure", :code=>"400", :message=> "Client error"})
+
+      subject.multi_receive(events)
     end
   end
 end

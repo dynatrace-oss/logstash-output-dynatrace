@@ -76,22 +76,19 @@ module LogStash
         begin
           request = Net::HTTP::Post.new(uri, headers)
           request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
-          response = send(request)
-          return if response.code == '200'
+          response = @client.request(request)
 
-          failure_message = "Dynatrace returned #{response.code} #{response.message}."
 
-          if response.code.start_with?('5')
-            raise RetryableError.new failure_message
-          end
-
-          if response.code.start_with?('4')
-            if response.code == '404'
-              @logger.error("#{failure_message} Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
-              return
-            end
+          case response
+          when Net::HTTPSuccess
+          when Net::HTTPServerError
+            raise RetryableError.new "Dynatrace returned #{response.code} #{response.message}."
+          when Net::HTTPNotFound
+            @logger.error("Dynatrace returned #{response.code} #{response.message}. Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.")
+          when Net::HTTPClientError
             @logger.error("Encountered a client error in HTTP output", :message => response.message, :code => response.code, :body => response.body)
-            return
+          else
+            @logger.error("Dynatrace returned #{response.code} #{response.message}.")
           end
 
           @logger.debug("successfully sent #{events.length} events")
@@ -110,10 +107,6 @@ module LogStash
         end
 
         @logger.debug("Successfully exported #{events.length} events with #{retries} retries")
-      end
-
-      def send(request)
-        @client.request(request)
       end
     end
   end
