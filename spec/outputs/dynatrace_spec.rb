@@ -91,8 +91,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject.logger).to_not receive(:info)
       expect(subject.logger).to_not receive(:error)
       expect(subject.logger).to_not receive(:warn)
-      response = ok
-      expect(client).to receive(:request) { response }
+      expect(client).to receive(:request) { ok }
       subject.multi_receive(events)
     end
   end
