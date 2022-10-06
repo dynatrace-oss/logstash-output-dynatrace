@@ -96,8 +96,10 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'with server error' do
     it 'retries 5 times with exponential backoff' do
-      allow(subject).to receive(:sleep)
       response = Net::HTTPServerError.new "1.1", "500", "Internal Server Error"
+      # This prevents the elusive "undefined method `close' for nil:NilClass" error.
+      expect(response).to receive(:body) { 'this is a failure' }.once
+      expect(subject.logger).to receive(:error).with("Encountered an HTTP server error", {:body=>"this is a failure", :code=>"500", :message=> "Internal Server Error"}).once
       expect_any_instance_of(Net::HTTP).to receive(:request) { response }.exactly(6).times
 
 
@@ -106,15 +108,15 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject).to receive(:sleep).with(4).ordered
       expect(subject).to receive(:sleep).with(8).ordered
       expect(subject).to receive(:sleep).with(16).ordered
-      # should not be called again
-      expect(subject).not_to receive(:sleep)
-
+      
+      expect(subject.logger).to receive(:error).with("Failed to export logs to Dynatrace.")
       subject.multi_receive(events)
     end
   end
 
   context 'with client error' do
     it 'does not retry on 404' do
+      allow(subject.logger).to receive(:error)
       response = Net::HTTPNotFound.new "1.1", "404", "Not Found"
       expect_any_instance_of(Net::HTTP).to receive(:request) { response }.once
       subject.multi_receive(events)

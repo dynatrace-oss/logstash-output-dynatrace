@@ -81,7 +81,8 @@ module LogStash
           case response
           when Net::HTTPSuccess
           when Net::HTTPServerError
-            raise RetryableError.new "Encountered an HTTP server error #{response.code} #{response.message}."
+            @logger.error("Encountered an HTTP server error", :message => response.message, :code => response.code, :body => response.body) if retries == 0
+            raise RetryableError.new
           when Net::HTTPNotFound
             @logger.error("Encountered a 404 Not Found error. Please check that log ingest is enabled and your API token has the `logs.ingest` (Ingest Logs) scope.", :message => response.message, :code => response.code)
             return
@@ -103,7 +104,7 @@ module LogStash
             retries += 1
             retry
           else
-            @logger.error("Failed to export logs to Dynatrace.", :error => e)
+            @logger.error("Failed to export logs to Dynatrace.")
             return
           end
         end
