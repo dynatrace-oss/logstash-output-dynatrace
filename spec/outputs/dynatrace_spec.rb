@@ -135,4 +135,17 @@ describe LogStash::Outputs::Dynatrace do
       subject.multi_receive(events)
     end
   end
+
+  context 'when an unknown error occurs' do
+    it 'logs and re-raises the error' do
+      class BadEvents
+        def length
+          1
+        end
+      end
+
+      expect(subject.logger).to receive(:error)
+      expect { subject.multi_receive(BadEvents.new) }.to raise_error(StandardError)
+    end
+  end
 end

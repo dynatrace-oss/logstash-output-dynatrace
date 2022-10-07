@@ -1,3 +1,6 @@
+## 0.3.1
+ - Log and re-raise unknown errors
+
 ## 0.3.0
  - Log response bodies on client errors
 
