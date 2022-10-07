@@ -19,7 +19,7 @@ require 'logstash/outputs/base'
 require 'logstash/json'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.3.0'
+PLUGIN_VERSION = '0.3.1'
 
 module LogStash
   module Outputs
@@ -105,6 +105,9 @@ module LogStash
             @logger.error("Failed to export logs to Dynatrace.")
             return
           end
+        rescue StandardError => e
+          @logger.error("Unknown error raised", :error => e.inspect)
+          raise e
         end
       end
 
