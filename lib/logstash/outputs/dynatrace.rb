@@ -36,7 +36,7 @@ module LogStash
       config :ingest_endpoint_url, validate: :uri, required: true
 
       # The API token to use to authenticate requests to the log ingestion endpoint. Must have `logs.ingest` (Ingest Logs) scope.
-      config :api_key, validate: :string, required: true
+      config :api_key, validate: :password, required: true
 
       # Disable SSL validation by setting :verify_mode OpenSSL::SSL::VERIFY_NONE
       config :ssl_verify_none, validate: :boolean, default: false
@@ -63,7 +63,7 @@ module LogStash
         {
           'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
-          'Authorization' => "Api-Token #{@api_key}"
+          'Authorization' => "Api-Token #{@api_key.value}"
         }
       end
 
