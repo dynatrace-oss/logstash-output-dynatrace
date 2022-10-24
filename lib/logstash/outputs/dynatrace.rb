@@ -19,7 +19,7 @@ require 'logstash/outputs/base'
 require 'logstash/json'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.3.1'
+PLUGIN_VERSION = '0.3.2'
 
 module LogStash
   module Outputs
