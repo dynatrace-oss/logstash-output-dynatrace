@@ -19,7 +19,7 @@ require 'logstash/outputs/base'
 require 'logstash/json'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.3.1'
+PLUGIN_VERSION = '0.3.2'
 
 module LogStash
   module Outputs
@@ -93,8 +93,9 @@ module LogStash
 
           raise RetryableError.new "code #{response.code}" if retryable(response)
 
-        rescue Net::HTTPBadResponse, RetryableError => e
-          # indicates a protocol error
+        rescue Net::OpenTimeout, Net::HTTPBadResponse, RetryableError => e
+          # Net::OpenTimeout indicates a connection could not be established within the timeout period
+          # Net::HTTPBadResponse indicates a protocol error
           if retries < MAX_RETRIES
             sleep_seconds = 2 ** retries
             @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.")
