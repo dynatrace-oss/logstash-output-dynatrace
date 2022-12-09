@@ -41,6 +41,9 @@ module LogStash
       # Disable SSL validation by setting :verify_mode OpenSSL::SSL::VERIFY_NONE
       config :ssl_verify_none, validate: :boolean, default: false
 
+      # Log bodies of failed export requests
+      config :debug_log_failed_request, validate: :boolean, default: false
+
       default :codec, 'json'
 
       attr_accessor :uri, :plugin_version
@@ -76,6 +79,7 @@ module LogStash
         begin
           request = Net::HTTP::Post.new(uri, headers)
           request.body = "#{LogStash::Json.dump(events.map(&:to_hash)).chomp}\n"
+          @logger.debug("Retrying request", :retries => retries) unless retries == 0
           response = @client.request(request)
 
           case response
@@ -91,6 +95,10 @@ module LogStash
             @logger.error("Encountered an unexpected response code", :message => response.message, :code => response.code)
           end
 
+          if not response.is_a?(Net::HTTPSuccess) and @debug_log_failed_request
+            @logger.debug("Request failed", :body => request.body)
+          end
+
           raise RetryableError.new "code #{response.code}" if retryable(response)
 
         rescue Net::OpenTimeout, Net::HTTPBadResponse, RetryableError => e
@@ -98,16 +106,16 @@ module LogStash
           # Net::HTTPBadResponse indicates a protocol error
           if retries < MAX_RETRIES
             sleep_seconds = 2 ** retries
-            @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.")
+            @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.", :retries => retries)
             sleep sleep_seconds
             retries += 1
             retry
           else
-            @logger.error("Failed to export logs to Dynatrace.")
+            @logger.error("Failed to export logs to Dynatrace.", :retries => retries)
             return
           end
         rescue StandardError => e
-          @logger.error("Unknown error raised", :error => e.inspect)
+          @logger.error("Unknown error raised", :error => e.inspect, :retries => retries)
           raise e
         end
       end

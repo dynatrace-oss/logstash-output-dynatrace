@@ -112,7 +112,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject).to receive(:sleep).with(8).ordered
       expect(subject).to receive(:sleep).with(16).ordered
 
-      expect(subject.logger).to receive(:error).with("Failed to export logs to Dynatrace.")
+      expect(subject.logger).to receive(:error).with("Failed to export logs to Dynatrace.", :retries => 5)
       subject.multi_receive(events)
     end
   end
