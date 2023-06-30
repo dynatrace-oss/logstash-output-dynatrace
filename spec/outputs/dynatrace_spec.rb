@@ -137,7 +137,7 @@ describe LogStash::Outputs::Dynatrace do
   end
 
   context 'when an unknown error occurs' do
-    it 'logs and re-raises the error' do
+    it 'logs and does not raise the error' do
       class BadEvents
         def length
           1
@@ -145,7 +145,7 @@ describe LogStash::Outputs::Dynatrace do
       end
 
       expect(subject.logger).to receive(:error)
-      expect { subject.multi_receive(BadEvents.new) }.to raise_error(StandardError)
+      expect { subject.multi_receive(BadEvents.new) }.to_not raise_error(StandardError)
     end
   end
 end
