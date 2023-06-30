@@ -1,6 +1,7 @@
 ## 0.4.0
 
 - Add OpenSSL::SSL::SSLError to the list of retried exception
+- Change concurrency mode to :single
 
 ## 0.3.2
 
