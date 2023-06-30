@@ -1,11 +1,11 @@
 ## 0.4.0
 
-- Add OpenSSL::SSL::SSLError to the list of retried exception
-- Change concurrency mode to :single
+- Add` OpenSSL::SSL::SSLError` to the list of retried exception
+- Change concurrency mode to `:single`
 
 ## 0.3.2
 
-- Add Net::OpenTimeout to the list of retried exceptions
+- Add `Net::OpenTimeout` to the list of retried exceptions
 
 ## 0.3.1
 
