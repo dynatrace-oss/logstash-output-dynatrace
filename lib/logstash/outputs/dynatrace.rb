@@ -20,7 +20,7 @@ require 'logstash/json'
 require 'openssl'
 
 MAX_RETRIES = 5
-PLUGIN_VERSION = '0.3.2'
+PLUGIN_VERSION = '0.3.3'
 
 module LogStash
   module Outputs

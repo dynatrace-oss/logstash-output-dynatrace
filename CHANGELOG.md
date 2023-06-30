@@ -1,3 +1,7 @@
+## 0.3.3
+
+- Add OpenSSL::SSL::SSLError to the list of retried exception
+
 ## 0.3.2
 
 - Add Net::OpenTimeout to the list of retried exceptions
