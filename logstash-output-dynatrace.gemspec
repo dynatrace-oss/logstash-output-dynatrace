@@ -42,6 +42,7 @@ Gem::Specification.new do |s|
   # Gem dependencies
   s.add_runtime_dependency 'logstash-codec-json'
   s.add_runtime_dependency 'logstash-core-plugin-api', '>= 2.0.0', '< 3'
+  s.add_runtime_dependency "logstash-mixin-http_client", '>= 7.2.0', '< 8.0.0'
 
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'logstash-input-generator'
