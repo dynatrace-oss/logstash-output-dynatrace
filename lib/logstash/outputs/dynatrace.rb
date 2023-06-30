@@ -17,6 +17,7 @@
 require 'logstash/namespace'
 require 'logstash/outputs/base'
 require 'logstash/json'
+require 'openssl'
 
 MAX_RETRIES = 5
 PLUGIN_VERSION = '0.3.2'
@@ -29,6 +30,8 @@ module LogStash
     # An output which sends logs to the Dynatrace log ingest v2 endpoint formatted as JSON
     class Dynatrace < LogStash::Outputs::Base
       config_name 'dynatrace'
+
+      concurrency :single
 
       # The full URL of the Dynatrace log ingestion endpoint:
       # - on SaaS:    https://{your-environment-id}.live.dynatrace.com/api/v2/logs/ingest
@@ -93,9 +96,10 @@ module LogStash
 
           raise RetryableError.new "code #{response.code}" if retryable(response)
 
-        rescue Net::OpenTimeout, Net::HTTPBadResponse, RetryableError => e
+        rescue Net::OpenTimeout, Net::HTTPBadResponse, OpenSSL::SSL::SSLError, RetryableError => e
           # Net::OpenTimeout indicates a connection could not be established within the timeout period
           # Net::HTTPBadResponse indicates a protocol error
+          # OpenSSL::SSL::SSLErrorWaitReadable indicates an error establishing the ssl connection
           if retries < MAX_RETRIES
             sleep_seconds = 2 ** retries
             @logger.warn("Failed to contact dynatrace: #{e.message}. Trying again after #{sleep_seconds} seconds.")
@@ -108,7 +112,6 @@ module LogStash
           end
         rescue StandardError => e
           @logger.error("Unknown error raised", :error => e.inspect)
-          raise e
         end
       end
 
