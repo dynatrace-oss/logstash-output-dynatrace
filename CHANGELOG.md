@@ -1,4 +1,4 @@
-## 0.3.3
+## 0.4.0
 
 - Add OpenSSL::SSL::SSLError to the list of retried exception
 
