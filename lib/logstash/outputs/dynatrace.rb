@@ -112,6 +112,7 @@ module LogStash
           end
         rescue StandardError => e
           @logger.error("Unknown error raised", :error => e.inspect)
+          raise e
         end
       end
 
