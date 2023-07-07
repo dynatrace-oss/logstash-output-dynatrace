@@ -1,0 +1,7 @@
+Logstash Output Dynatrace
+Copyright 2023 Dynatrace LLC
+
+The Initial Developer of some parts of this plugin, which are copied from,
+derived from, or inspired by Logstash Output HTTP, is
+Elastic (https://www.elastic.co) and Logstash contributors.
+Copyright 2020 Elastic and contributors. All rights reserved.
