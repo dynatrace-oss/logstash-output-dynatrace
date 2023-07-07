@@ -71,6 +71,8 @@ class LogStash::Outputs::Dynatrace < LogStash::Outputs::Base
     # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
     @ssl_verification_mode = "none" if @ssl_verify_none
 
+    @ingest_endpoint_url = @ingest_endpoint_url.to_s
+
     # TODO I don't really understand how this mechanism works. Does it work?
     # TODO try to remove this and see what happens
     # We count outstanding requests with this queue
@@ -153,14 +155,10 @@ class LogStash::Outputs::Dynatrace < LogStash::Outputs::Base
           successes.incrementAndGet
         when :retry
           next_attempt = attempt+1
-          if (next_attempt >= MAX_RETRIES)
-            sleep_for = sleep_for_attempt(next_attempt)
-            @logger.info("Retrying http request, will sleep for #{sleep_for} seconds")
-            timer_task = RetryTimerTask.new(pending, event, next_attempt)
-            @timer.schedule(timer_task, sleep_for*1000)
-          else
-            @logger.info("Maximum retries exceeded. Dropping the batch")
-          end
+          sleep_for = sleep_for_attempt(next_attempt)
+          @logger.info("Retrying http request, will sleep for #{sleep_for} seconds")
+          timer_task = RetryTimerTask.new(pending, event, next_attempt)
+          @timer.schedule(timer_task, sleep_for*1000)
         when :failure
           failures.incrementAndGet
         else
@@ -214,7 +212,7 @@ class LogStash::Outputs::Dynatrace < LogStash::Outputs::Base
     # end
 
     # Create an async request
-    response = client.post(ingest_endpoint_url, :body => body, :headers => headers)
+    response = client.post(ingest_endpoint_url, body: body, headers: headers)
 
     if !response_success?(response)
       if retryable_response?(response)
@@ -289,6 +287,6 @@ class LogStash::Outputs::Dynatrace < LogStash::Outputs::Base
 
   # Format the HTTP body
   def event_body(event)
-    LogStash::Json.dump(event.map {|e| map_event(e) })
+    "#{LogStash::Json.dump(event.map(&:to_hash)).chomp}\n"
   end
 end
