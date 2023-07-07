@@ -17,10 +17,10 @@
 require 'logstash/outputs/base'
 require 'logstash/namespace'
 require 'logstash/json'
+require 'logstash/version'
+require 'dynatrace/version'
 require 'uri'
 require 'logstash/plugin_mixins/http_client'
-
-PLUGIN_VERSION = '0.4.0'
 
 # These constants came from the http plugin config but we don't want them configurable
 # If encountered as response codes this plugin will retry these requests
@@ -80,16 +80,6 @@ module LogStash
 
         @ingest_endpoint_url = @ingest_endpoint_url.to_s
 
-        # TODO: I don't really understand how this mechanism works. Does it work?
-        # TODO try to remove this and see what happens
-        # We count outstanding requests with this queue
-        # This queue tracks the requests to create backpressure
-        # When this queue is empty no new requests may be sent,
-        # tokens must be added back by the client on success
-        @request_tokens = SizedQueue.new(@pool_max)
-        @pool_max.times { |_t| @request_tokens << true }
-        @requests = []
-
         # Run named Timer as daemon thread
         @timer = java.util.Timer.new("HTTP Output #{params['id']}", true)
       end
@@ -115,7 +105,7 @@ module LogStash
 
       def make_headers
         {
-          'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
+          'User-Agent' => "logstash-output-dynatrace/#{DYNATRACE_PLUGIN_VERSION} logstash/#{LOGSTASH_VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key.value}"
         }

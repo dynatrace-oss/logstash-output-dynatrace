@@ -14,7 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-module DynatraceConstants
-  # Also required to change the version in lib/logstash/outputs/dynatrace.rb
-  VERSION = '0.4.0'
+unless defined?(DYNATRACE_PLUGIN_VERSION)
+  require 'yaml'
+  DYNATRACE_PLUGIN_VERSION = YAML.load_file(File.expand_path('../../version.yaml',
+                                                             File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
 end

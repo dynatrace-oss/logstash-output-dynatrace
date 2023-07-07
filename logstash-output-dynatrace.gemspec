@@ -14,11 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require_relative './version'
+require 'yaml'
 
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
-  s.version = DynatraceConstants::VERSION
+  s.version = YAML.load_file(File.expand_path('./version.yaml',
+                                              File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
   s.description = <<-EOF
     This gem is a Logstash plugin required to be installed on top of the Logstash
@@ -32,7 +33,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   # Files
-  s.files = Dir['lib/**/*', 'spec/**/*', '*.gemspec', '*.md', 'Gemfile', 'LICENSE', 'version.rb']
+  s.files = Dir['lib/**/*', 'spec/**/*', '*.gemspec', '*.md', 'Gemfile', 'LICENSE', 'version.yaml']
   # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
