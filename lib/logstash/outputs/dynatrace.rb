@@ -65,9 +65,14 @@ module LogStash
       # The API token to use to authenticate requests to the log ingestion endpoint. Must have `logs.ingest` (Ingest Logs) scope.
       config :api_key, validate: :password, required: true
 
-      # TODO: do we want to defer to ssl_verification_mode from mixin?
       # Disable SSL validation by setting :verify_mode OpenSSL::SSL::VERIFY_NONE
       config :ssl_verify_none, validate: :boolean, default: false
+
+      # Include headers in debug logs when HTTP errors occur. Headers include sensitive data such as API tokens.
+      config :debug_include_headers, validate: :boolean, default: false
+
+      # Include body in debug logs when HTTP errors occur. Body may be large and include sensitive data.
+      config :debug_include_body, validate: :boolean, default: false
 
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
@@ -89,14 +94,6 @@ module LogStash
         @timer = java.util.Timer.new("HTTP Output #{params['id']}", true)
       end
 
-      def make_headers
-        {
-          'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
-          'Content-Type' => 'application/json; charset=utf-8',
-          'Authorization' => "Api-Token #{@api_key.value}"
-        }
-      end
-
       def multi_receive(events)
         return if events.empty?
 
@@ -114,6 +111,14 @@ module LogStash
         def run
           @pending << [@event, @attempt]
         end
+      end
+
+      def make_headers
+        {
+          'User-Agent' => "logstash-output-dynatrace/#{PLUGIN_VERSION}",
+          'Content-Type' => 'application/json; charset=utf-8',
+          'Authorization' => "Api-Token #{@api_key.value}"
+        }
       end
 
       def log_retryable_response(response)
@@ -235,13 +240,16 @@ module LogStash
           will_retry: will_retry
         }
         if @logger.debug?
-          # TODO: how sensitive should we be with debug log data?
           # backtraces are big
           log_params[:backtrace] = e.backtrace
-          # headers can have sensitive data
-          log_params[:headers] = headers
-          # body can be big and may have sensitive data
-          log_params[:body] = body
+          if @debug_include_headers
+            # headers can have sensitive data
+            log_params[:headers] = headers
+          end
+          if @debug_include_body
+            # body can be big and may have sensitive data
+            log_params[:body] = body
+          end
         end
         log_failure('Could not fetch URL', log_params)
 

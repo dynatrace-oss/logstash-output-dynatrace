@@ -63,21 +63,57 @@ describe LogStash::Outputs::Dynatrace do
       end
 
       it 'logs a failure' do
-        expect(subject).to have_received(:log_failure).with(any_args)
+        expect(subject).to have_received(:log_failure).with(anything, hash_including(:backtrace))
       end
 
-      it 'logs headers' do
-        expect(subject).to have_received(:log_failure).with(anything, hash_including(:headers))
+      context 'with debug_include_headers false (default)' do
+        it 'does not log headers' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_not_including(:headers))
+        end
       end
 
-      it 'logs the body' do
-        expect(subject).to have_received(:log_failure).with(anything, hash_including(:body))
+      context 'with debug_include_body false (default)' do
+        it 'does not log body' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_not_including(:body))
+        end
+      end
+
+      context 'with debug_include_headers true' do
+        let(:config) { super().merge 'debug_include_headers' => true }
+
+        it 'logs headers' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_including(:headers))
+        end
+      end
+
+      context 'with debug_include_body true' do
+        let(:config) { super().merge 'debug_include_body' => true }
+
+        it 'logs body' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_including(:body))
+        end
+      end
+
+      context 'with debug_include_headers false' do
+        let(:config) { super().merge 'debug_include_headers' => false }
+
+        it 'logs headers' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_not_including(:headers))
+        end
+      end
+
+      context 'with debug_include_body false' do
+        let(:config) { super().merge 'debug_include_body' => false }
+
+        it 'logs body' do
+          expect(subject).to have_received(:log_failure).with(anything, hash_not_including(:body))
+        end
       end
     end
   end
 
-  let(:verb_behavior_config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'pool_max' => 1 } }
-  subject { LogStash::Outputs::Dynatrace.new(verb_behavior_config) }
+  let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'pool_max' => 1 } }
+  subject { LogStash::Outputs::Dynatrace.new(config) }
 
   let(:client) { subject.client }
 
