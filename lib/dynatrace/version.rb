@@ -14,8 +14,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-unless defined?(DYNATRACE_PLUGIN_VERSION)
+module DynatraceConstants
   require 'yaml'
-  DYNATRACE_PLUGIN_VERSION = YAML.load_file(File.expand_path('../../version.yaml',
-                                                             File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
+  VERSION = YAML.load_file(File.expand_path('../../version.yaml',
+    File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
 end

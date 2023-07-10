@@ -105,7 +105,7 @@ module LogStash
 
       def make_headers
         {
-          'User-Agent' => "logstash-output-dynatrace/#{DYNATRACE_PLUGIN_VERSION} logstash/#{LOGSTASH_VERSION}",
+          'User-Agent' => "logstash-output-dynatrace/#{DynatraceConstants::VERSION} logstash/#{LOGSTASH_VERSION}",
           'Content-Type' => 'application/json; charset=utf-8',
           'Authorization' => "Api-Token #{@api_key.value}"
         }
