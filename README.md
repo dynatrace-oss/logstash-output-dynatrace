@@ -103,6 +103,9 @@ It is recommended to leave this optional configuration set to `false` unless abs
 Setting `ssl_verify_none` to `true` causes the output plugin to skip certificate verification when sending log ingest requests to SSL and TLS protected HTTPS endpoints.
 This option may be required if you are using a self-signed certificate, an expired certificate, or a certificate which was generated for a different domain than the one in use.
 
+> NOTE: Starting in version `0.4.0` this option has no effect in versions of logstash older than `8.1.0`.
+> If this functionality is required it is recommended to update logstash or downgrade to version `0.3.2` of this plugin.
+
 ### `enable_metric`
 
  * Value type is [boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean)
