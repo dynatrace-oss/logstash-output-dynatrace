@@ -47,6 +47,8 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'logstash-input-generator'
+  s.add_development_dependency 'sinatra'
+  s.add_development_dependency 'webrick'
 
   s.add_development_dependency 'rubocop', '1.9.1'
   s.add_development_dependency 'rubocop-rake', '0.5.1'
