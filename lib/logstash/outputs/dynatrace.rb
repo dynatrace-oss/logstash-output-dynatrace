@@ -202,13 +202,6 @@ module LogStash
         body = event_body(event)
         headers = make_headers
 
-        # TODO: keep? If we want this make sure to require zlib
-        # # Compress the body and add appropriate header
-        # if @http_compression == true
-        #   headers["Content-Encoding"] = "gzip"
-        #   body = gzip(body)
-        # end
-
         # Create an async request
         response = client.post(ingest_endpoint_url, body: body, headers: headers)
 

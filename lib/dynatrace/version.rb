@@ -17,5 +17,5 @@
 module DynatraceConstants
   require 'yaml'
   VERSION = YAML.load_file(File.expand_path('../../version.yaml',
-    File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
+                                            File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
 end

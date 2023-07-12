@@ -23,8 +23,6 @@ require 'webrick'
 require 'webrick/https'
 require 'openssl'
 
-# require "supports/compressed_requests"
-
 PORT = rand(65_535 - 1024) + 1025
 
 module LogStash
@@ -54,9 +52,6 @@ end
 # == Sinatra has ended his set (crowd applauds)
 #
 class TestApp < Sinatra::Base
-  # on the fly uncompress gzip content
-  #   use CompressedRequests
-
   set :environment, :production
   set :sessions, false
 
