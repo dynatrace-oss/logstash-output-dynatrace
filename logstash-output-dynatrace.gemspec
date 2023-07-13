@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-# Copyright 2021 Dynatrace LLC
+# Copyright 2023 Dynatrace LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,11 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-require_relative './version'
+require 'yaml'
 
 Gem::Specification.new do |s|
   s.name = 'logstash-output-dynatrace'
-  s.version = DynatraceConstants::VERSION
+  s.version = YAML.load_file(File.expand_path('./version.yaml',
+                                              File.dirname(__FILE__))).fetch('logstash-output-dynatrace')
   s.summary = 'A logstash output plugin for sending logs to the Dynatrace Generic log ingest API v2'
   s.description = <<-EOF
     This gem is a Logstash plugin required to be installed on top of the Logstash
@@ -32,7 +33,7 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib']
 
   # Files
-  s.files = Dir['lib/**/*', 'spec/**/*', '*.gemspec', '*.md', 'Gemfile', 'LICENSE','version.rb']
+  s.files = Dir['lib/**/*', 'spec/**/*', '*.gemspec', '*.md', 'Gemfile', 'LICENSE', 'version.yaml']
   # Tests
   s.test_files = s.files.grep(%r{^(test|spec|features)/})
 
@@ -42,9 +43,12 @@ Gem::Specification.new do |s|
   # Gem dependencies
   s.add_runtime_dependency 'logstash-codec-json'
   s.add_runtime_dependency 'logstash-core-plugin-api', '>= 2.0.0', '< 3'
+  s.add_runtime_dependency 'logstash-mixin-http_client', '>= 6.0.0', '< 8.0.0'
 
   s.add_development_dependency 'logstash-devutils'
   s.add_development_dependency 'logstash-input-generator'
+  s.add_development_dependency 'sinatra'
+  s.add_development_dependency 'webrick'
 
   s.add_development_dependency 'rubocop', '1.9.1'
   s.add_development_dependency 'rubocop-rake', '0.5.1'

@@ -103,12 +103,8 @@ It is recommended to leave this optional configuration set to `false` unless abs
 Setting `ssl_verify_none` to `true` causes the output plugin to skip certificate verification when sending log ingest requests to SSL and TLS protected HTTPS endpoints.
 This option may be required if you are using a self-signed certificate, an expired certificate, or a certificate which was generated for a different domain than the one in use.
 
-### `codec` 
-
-* Value type is codec
-* Default value is "plain"
-
-The codec used for output data. Output codecs are a convenient method for encoding your data before it leaves the output without needing a separate filter in your Logstash pipeline.
+> NOTE: Starting in plugin version `0.5.0`, this option has no effect in versions of Logstash older than `8.1.0`.
+> If this functionality is required, it is recommended to update Logstash or stay at plugin version `0.4.x` or older.
 
 ### `enable_metric`
 
