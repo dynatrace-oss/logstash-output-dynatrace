@@ -74,6 +74,9 @@ module LogStash
       # Include body in debug logs when HTTP errors occur. Body may be large and include sensitive data.
       config :debug_include_body, validate: :boolean, default: false
 
+      # Maximum size payload to send to the Dynatrace API. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
+      config :max_payload_size, validate: :number, default: 4_500_000
+
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
         @ssl_verification_mode = 'none' if @ssl_verify_none
@@ -100,6 +103,39 @@ module LogStash
 
         def run
           @pending << [@event, @attempt]
+        end
+      end
+
+      class BatchSerializer
+        def initialize(max_batch_size)
+          @max_batch_size = max_batch_size
+          @batch_events_size = 0
+          @serialized_events = []
+        end
+
+        def offer(event)
+          serialized_event = LogStash::Json.dump(event.to_hash)
+          if batch_size + serialized_event.length + (@serialized_events.length > 0 ? 1 : 0)  > @max_batch_size
+            return false
+          end
+          @serialized_events.push(serialized_event)
+          @batch_events_size += serialized_event.length
+          true
+        end
+
+        def batch_size
+          2 + @batch_events_size + @serialized_events.length - 1
+        end
+
+        def drain
+          out = '[' + @serialized_events.join(',') + "]\n"
+          @batch_events_size = 0
+          @serialized_events = []
+          out
+        end
+
+        def empty?
+          @serialized_events.empty?
         end
       end
 
@@ -135,7 +171,18 @@ module LogStash
         failures  = java.util.concurrent.atomic.AtomicInteger.new(0)
 
         pending = Queue.new
-        pending << [events, 0]
+        batcher = BatchSerializer.new(@max_payload_size)
+
+        events.each do |event|
+          if not batcher.offer(event)
+            pending << [batcher.drain(), 0]
+            batcher.offer(event)
+          end
+        end
+
+        if not batcher.empty?
+          pending << [batcher.drain(), 0]
+        end
 
         while popped = pending.pop
           break if popped == :done
@@ -198,21 +245,21 @@ module LogStash
         (sleep_for / 2) + (rand(0..sleep_for) / 2)
       end
 
-      def send_event(event, attempt)
-        body = event_body(event)
+      def send_event(body, attempt)
+        # body = event_body(event)
         headers = make_headers
 
         # Create an async request
         response = client.post(ingest_endpoint_url, body: body, headers: headers)
 
         if response_success?(response)
-          [:success, event, attempt]
+          [:success, body, attempt]
         elsif retryable_response?(response)
           log_retryable_response(response)
-          [:retry, event, attempt]
+          [:retry, body, attempt]
         else
-          log_error_response(response, ingest_endpoint_url, event)
-          [:failure, event, attempt]
+          log_error_response(response, ingest_endpoint_url, body)
+          [:failure, body, attempt]
         end
       rescue StandardError => e
         will_retry = retryable_exception?(e)
@@ -237,9 +284,9 @@ module LogStash
         log_failure('Could not fetch URL', log_params)
 
         if will_retry
-          [:retry, event, attempt]
+          [:retry, body, attempt]
         else
-          [:failure, event, attempt]
+          [:failure, body, attempt]
         end
       end
 
@@ -276,10 +323,10 @@ module LogStash
         @logger.error(message, opts)
       end
 
-      # Format the HTTP body
-      def event_body(event)
-        "#{LogStash::Json.dump(event.map(&:to_hash)).chomp}\n"
-      end
+      # # Format the HTTP body
+      # def event_body(event)
+      #   "#{LogStash::Json.dump(event.map(&:to_hash)).chomp}\n"
+      # end
     end
   end
 end

@@ -132,7 +132,7 @@ describe LogStash::Outputs::Dynatrace do
     end
   end
 
-  context 'performing a get' do
+  context 'performing a request' do
     describe 'invoking the request' do
       before do
         subject.multi_receive([event])
@@ -184,6 +184,17 @@ describe LogStash::Outputs::Dynatrace do
 
       it 'should make three total requests' do
         expect(subject).to have_received(:send_event).exactly(3).times
+      end
+    end
+
+    context 'with more than 4.5MB of events' do
+      before do
+        allow(subject).to receive(:send_event) {|e, att| [:success, e, att] }
+        subject.multi_receive([*1..2].map{|n| LogStash::Event.new({ 'n' => n.to_s * 2_500_001 })})
+      end
+
+      it 'should split the chunk into multiple requests' do
+        expect(subject).to have_received(:send_event).exactly(2).times
       end
     end
   end
