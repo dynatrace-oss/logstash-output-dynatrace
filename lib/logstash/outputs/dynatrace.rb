@@ -176,7 +176,9 @@ module LogStash
         events.each do |event|
           if not batcher.offer(event)
             pending << [batcher.drain(), 0]
-            batcher.offer(event)
+            if not batcher.offer(event)
+              @logger.warn("Event larger than max_payload_size dropped", size: LogStash::Json.dump(event.to_hash).length )
+            end
           end
         end
 
