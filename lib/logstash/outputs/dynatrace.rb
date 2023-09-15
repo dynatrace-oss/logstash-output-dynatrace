@@ -324,11 +324,6 @@ module LogStash
       def log_failure(message, opts)
         @logger.error(message, opts)
       end
-
-      # # Format the HTTP body
-      # def event_body(event)
-      #   "#{LogStash::Json.dump(event.map(&:to_hash)).chomp}\n"
-      # end
     end
   end
 end
