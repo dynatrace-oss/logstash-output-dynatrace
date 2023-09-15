@@ -247,21 +247,20 @@ module LogStash
         (sleep_for / 2) + (rand(0..sleep_for) / 2)
       end
 
-      def send_event(body, attempt)
-        # body = event_body(event)
+      def send_event(event, attempt)
         headers = make_headers
 
         # Create an async request
-        response = client.post(ingest_endpoint_url, body: body, headers: headers)
+        response = client.post(ingest_endpoint_url, body: event, headers: headers)
 
         if response_success?(response)
-          [:success, body, attempt]
+          [:success, event, attempt]
         elsif retryable_response?(response)
           log_retryable_response(response)
-          [:retry, body, attempt]
+          [:retry, event, attempt]
         else
-          log_error_response(response, ingest_endpoint_url, body)
-          [:failure, body, attempt]
+          log_error_response(response, ingest_endpoint_url, event)
+          [:failure, event, attempt]
         end
       rescue StandardError => e
         will_retry = retryable_exception?(e)
@@ -280,15 +279,15 @@ module LogStash
           end
           if @debug_include_body
             # body can be big and may have sensitive data
-            log_params[:body] = body
+            log_params[:body] = event
           end
         end
         log_failure('Could not fetch URL', log_params)
 
         if will_retry
-          [:retry, body, attempt]
+          [:retry, event, attempt]
         else
-          [:failure, body, attempt]
+          [:failure, event, attempt]
         end
       end
 
