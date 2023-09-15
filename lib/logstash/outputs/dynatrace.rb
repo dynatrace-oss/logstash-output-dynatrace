@@ -115,9 +115,10 @@ module LogStash
 
         def offer(event)
           serialized_event = LogStash::Json.dump(event.to_hash)
-          if batch_size + serialized_event.length + (@serialized_events.length > 0 ? 1 : 0)  > @max_batch_size
+          if batch_size + serialized_event.length + (@serialized_events.length.positive? ? 1 : 0) > @max_batch_size
             return false
           end
+
           @serialized_events.push(serialized_event)
           @batch_events_size += serialized_event.length
           true
@@ -128,7 +129,7 @@ module LogStash
         end
 
         def drain
-          out = '[' + @serialized_events.join(',') + "]\n"
+          out = "[#{@serialized_events.join(',')}]\n"
           @batch_events_size = 0
           @serialized_events = []
           out
@@ -174,17 +175,16 @@ module LogStash
         batcher = BatchSerializer.new(@max_payload_size)
 
         events.each do |event|
-          if not batcher.offer(event)
-            pending << [batcher.drain(), 0]
-            if not batcher.offer(event)
-              @logger.warn("Event larger than max_payload_size dropped", size: LogStash::Json.dump(event.to_hash).length )
-            end
+          next if batcher.offer(event)
+
+          pending << [batcher.drain, 0]
+          unless batcher.offer(event)
+            @logger.warn('Event larger than max_payload_size dropped',
+                         size: LogStash::Json.dump(event.to_hash).length)
           end
         end
 
-        if not batcher.empty?
-          pending << [batcher.drain(), 0]
-        end
+        pending << [batcher.drain, 0] unless batcher.empty?
 
         while popped = pending.pop
           break if popped == :done
