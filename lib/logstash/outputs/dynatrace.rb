@@ -106,15 +106,14 @@ module LogStash
         end
       end
 
-      class BatchSerializer
+      class Batcher
         def initialize(max_batch_size)
           @max_batch_size = max_batch_size
           @batch_events_size = 0
           @serialized_events = []
         end
 
-        def offer(event)
-          serialized_event = LogStash::Json.dump(event.to_hash)
+        def offer(serialized_event)
           # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
           batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
           return false if batch_size_bytes > @max_batch_size
@@ -168,16 +167,21 @@ module LogStash
         failures  = java.util.concurrent.atomic.AtomicInteger.new(0)
 
         pending = Queue.new
-        batcher = BatchSerializer.new(@max_payload_size)
+        batcher = Batcher.new(@max_payload_size)
 
         events.each do |event|
-          next if batcher.offer(event)
-
-          pending << [batcher.drain_and_serialize, 0]
-          unless batcher.offer(event)
-            @logger.warn('Event larger than max_payload_size dropped',
-                         size: LogStash::Json.dump(event.to_hash).length)
+          serialized_event = LogStash::Json.dump(event.to_hash)
+          if serialized_event.length > @max_payload_size
+            log_params = { size: serialized_event.length }
+            log_params[:body] = serialized_event if @debug_include_body
+            log_warning('Event larger than max_payload_size dropped', log_params)
+            next
           end
+
+          next if batcher.offer(serialized_event)
+
+          pending << [batcher.drain_and_serialize, 0] unless batcher.empty?
+          batcher.offer(serialized_event)
         end
 
         pending << [batcher.drain_and_serialize, 0] unless batcher.empty?
@@ -318,6 +322,11 @@ module LogStash
       # This is split into a separate method mostly to help testing
       def log_failure(message, opts)
         @logger.error(message, opts)
+      end
+
+      # This is split into a separate method mostly to help testing
+      def log_warning(message, opts)
+        @logger.warn(message, opts)
       end
     end
   end
