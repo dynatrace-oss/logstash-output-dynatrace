@@ -116,8 +116,8 @@ module LogStash
         def offer(event)
           serialized_event = LogStash::Json.dump(event.to_hash)
           # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
-          batch_size = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
-          return false if batch_size > @max_batch_size
+          batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
+          return false if batch_size_bytes > @max_batch_size
 
           @serialized_events.push(serialized_event)
           @batch_events_size += serialized_event.length
