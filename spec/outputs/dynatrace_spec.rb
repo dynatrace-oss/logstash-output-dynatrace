@@ -190,7 +190,7 @@ describe LogStash::Outputs::Dynatrace do
     context 'with more than 4.5MB of events' do
       before do
         allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
-        subject.multi_receive([*1..2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 2_500_001 }) })
+        subject.multi_receive([1,2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 2_500_001 }) })
       end
 
       it 'should split the chunk into multiple requests' do
