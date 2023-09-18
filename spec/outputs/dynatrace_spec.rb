@@ -214,7 +214,7 @@ describe LogStash::Outputs::Dynatrace do
     context 'with one small event and one too large event' do
       before do
         allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
-        subject.multi_receive([LogStash::Event.new({ 'event' => 'small' },
+        subject.multi_receive([LogStash::Event.new({ 'event' => 'small' }),
                                LogStash::Event.new({ 'event' => 'n' * 4_500_001 })])
       end
 
