@@ -74,7 +74,7 @@ module LogStash
       # Include body in debug logs when HTTP errors occur. Body may be large and include sensitive data.
       config :debug_include_body, validate: :boolean, default: false
 
-      # Maximum size payload to send to the Dynatrace API. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
+      # Maximum size payload to send to the Dynatrace API in Bytes. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
       config :max_payload_size, validate: :number, default: 4_500_000
 
       def register
@@ -115,17 +115,13 @@ module LogStash
 
         def offer(event)
           serialized_event = LogStash::Json.dump(event.to_hash)
-          if batch_size + serialized_event.length + (@serialized_events.length.positive? ? 1 : 0) > @max_batch_size
-            return false
-          end
+          # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
+          batch_size = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
+          return false if batch_size > @max_batch_size
 
           @serialized_events.push(serialized_event)
           @batch_events_size += serialized_event.length
           true
-        end
-
-        def batch_size
-          2 + @batch_events_size + @serialized_events.length - 1
         end
 
         def drain_and_serialize
