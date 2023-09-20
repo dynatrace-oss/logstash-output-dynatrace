@@ -1,6 +1,6 @@
 # Logstash Dynatrace output plugin
 
-[![Travis Build Status](https://app.travis-ci.com/dynatrace-oss/logstash-output-dynatrace.svg)](https://app.travis-ci.com/dynatrace-oss/logstash-output-dynatrace)
+[![Travis Build Status](https://api.travis-ci.com/dynatrace-oss/logstash-output-dynatrace.svg?branch=main)](https://app.travis-ci.com/dynatrace-oss/logstash-output-dynatrace)
 
 > This project is developed and maintained by Dynatrace R&D.
 
