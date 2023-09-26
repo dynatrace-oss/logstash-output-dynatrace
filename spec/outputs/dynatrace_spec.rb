@@ -123,6 +123,7 @@ describe LogStash::Outputs::Dynatrace do
       .with(ingest_endpoint_url, hash_including(:body, :headers))
       .and_call_original
     allow(subject).to receive(:log_failure).with(any_args)
+    allow(subject).to receive(:log_warning).with(any_args)
     allow(subject).to receive(:log_retryable_response).with(any_args)
   end
 
@@ -132,7 +133,7 @@ describe LogStash::Outputs::Dynatrace do
     end
   end
 
-  context 'performing a get' do
+  context 'performing a request' do
     describe 'invoking the request' do
       before do
         subject.multi_receive([event])
@@ -185,6 +186,63 @@ describe LogStash::Outputs::Dynatrace do
       it 'should make three total requests' do
         expect(subject).to have_received(:send_event).exactly(3).times
       end
+    end
+
+    context 'with more than 4.5MB of events' do
+      before do
+        allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
+        subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 2_500_001 }) })
+      end
+
+      it 'should split the chunk into multiple requests' do
+        expect(subject).to have_received(:send_event).exactly(2).times
+      end
+    end
+
+    shared_examples('send small and drop large') do
+      it 'should only send the small event' do
+        expect(subject).to have_received(:send_event).exactly(1).times
+      end
+
+      it 'should log a warning' do
+        expect(subject).to have_received(:log_warning)
+          .with('Event larger than max_payload_size dropped', hash_including(:size))
+          .exactly(:once)
+      end
+    end
+
+    context 'with one small event and one too large event' do
+      before do
+        allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
+        subject.multi_receive([LogStash::Event.new({ 'event' => 'small' }),
+                               LogStash::Event.new({ 'event' => 'n' * 4_500_001 })])
+      end
+
+      include_examples('send small and drop large')
+    end
+
+    context 'with one too large event and one small event' do
+      before do
+        allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
+        subject.multi_receive([LogStash::Event.new({ 'event' => 'n' * 4_500_001 }),
+                               LogStash::Event.new({ 'event' => 'small' })])
+      end
+
+      include_examples('send small and drop large')
+    end
+  end
+
+  context 'max_payload_size 2MB' do
+    let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => 2_000_000 } }
+    subject { LogStash::Outputs::Dynatrace.new(config) }
+
+    before do
+      allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
+      subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 1_250_000 }) })
+    end
+
+    it 'should split the chunk into multiple requests' do
+      expect(subject).to have_received(:send_event).exactly(2).times
     end
   end
 

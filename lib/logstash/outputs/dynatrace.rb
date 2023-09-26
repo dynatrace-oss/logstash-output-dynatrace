@@ -74,6 +74,9 @@ module LogStash
       # Include body in debug logs when HTTP errors occur. Body may be large and include sensitive data.
       config :debug_include_body, validate: :boolean, default: false
 
+      # Maximum size payload to send to the Dynatrace API in Bytes. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
+      config :max_payload_size, validate: :number, default: 4_500_000
+
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
         @ssl_verification_mode = 'none' if @ssl_verify_none
@@ -100,6 +103,35 @@ module LogStash
 
         def run
           @pending << [@event, @attempt]
+        end
+      end
+
+      class Batcher
+        def initialize(max_batch_size)
+          @max_batch_size = max_batch_size
+          @batch_events_size = 0
+          @serialized_events = []
+        end
+
+        def offer(serialized_event)
+          # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
+          batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
+          return false if batch_size_bytes > @max_batch_size
+
+          @serialized_events.push(serialized_event)
+          @batch_events_size += serialized_event.length
+          true
+        end
+
+        def drain_and_serialize
+          out = "[#{@serialized_events.join(',')}]\n"
+          @batch_events_size = 0
+          @serialized_events = []
+          out
+        end
+
+        def empty?
+          @serialized_events.empty?
         end
       end
 
@@ -135,7 +167,24 @@ module LogStash
         failures  = java.util.concurrent.atomic.AtomicInteger.new(0)
 
         pending = Queue.new
-        pending << [events, 0]
+        batcher = Batcher.new(@max_payload_size)
+
+        events.each do |event|
+          serialized_event = LogStash::Json.dump(event.to_hash)
+          if serialized_event.length > @max_payload_size
+            log_params = { size: serialized_event.length }
+            log_params[:body] = serialized_event if @debug_include_body
+            log_warning('Event larger than max_payload_size dropped', log_params)
+            next
+          end
+
+          next if batcher.offer(serialized_event)
+
+          pending << [batcher.drain_and_serialize, 0] unless batcher.empty?
+          batcher.offer(serialized_event)
+        end
+
+        pending << [batcher.drain_and_serialize, 0] unless batcher.empty?
 
         while popped = pending.pop
           break if popped == :done
@@ -199,11 +248,10 @@ module LogStash
       end
 
       def send_event(event, attempt)
-        body = event_body(event)
         headers = make_headers
 
         # Create an async request
-        response = client.post(ingest_endpoint_url, body: body, headers: headers)
+        response = client.post(ingest_endpoint_url, body: event, headers: headers)
 
         if response_success?(response)
           [:success, event, attempt]
@@ -231,7 +279,7 @@ module LogStash
           end
           if @debug_include_body
             # body can be big and may have sensitive data
-            log_params[:body] = body
+            log_params[:body] = event
           end
         end
         log_failure('Could not fetch URL', log_params)
@@ -276,9 +324,9 @@ module LogStash
         @logger.error(message, opts)
       end
 
-      # Format the HTTP body
-      def event_body(event)
-        "#{LogStash::Json.dump(event.map(&:to_hash)).chomp}\n"
+      # This is split into a separate method mostly to help testing
+      def log_warning(message, opts)
+        @logger.warn(message, opts)
       end
     end
   end
