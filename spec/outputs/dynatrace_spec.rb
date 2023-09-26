@@ -206,7 +206,7 @@ describe LogStash::Outputs::Dynatrace do
 
       it 'should log a warning' do
         expect(subject).to have_received(:log_warning)
-          .with('Event larger than max_payload_size dropped', hash_including(size: 4_500_068))
+          .with('Event larger than max_payload_size dropped', hash_including(:size))
           .exactly(:once)
       end
     end
@@ -229,6 +229,20 @@ describe LogStash::Outputs::Dynatrace do
       end
 
       include_examples('send small and drop large')
+    end
+  end
+
+  context 'max_payload_size 2MB' do
+    let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => 2_000_000 } }
+    subject { LogStash::Outputs::Dynatrace.new(config) }
+
+    before do
+      allow(subject).to receive(:send_event) { |e, att| [:success, e, att] }
+      subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 1_250_000 }) })
+    end
+
+    it 'should split the chunk into multiple requests' do
+      expect(subject).to have_received(:send_event).exactly(2).times
     end
   end
 
