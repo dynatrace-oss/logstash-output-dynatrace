@@ -1,3 +1,4 @@
+<!-- omit in toc -->
 # Logstash Dynatrace output plugin
 
 [![Travis Build Status](https://api.travis-ci.com/dynatrace-oss/logstash-output-dynatrace.svg?branch=main)](https://app.travis-ci.com/dynatrace-oss/logstash-output-dynatrace)
@@ -14,13 +15,12 @@
   - [`ingest_endpoint_url`](#ingest_endpoint_url)
   - [`api_key`](#api_key)
   - [`ssl_verify_none`](#ssl_verify_none)
-  - [`codec`](#codec)
   - [`enable_metric`](#enable_metric)
   - [`id`](#id)
 - [Troubleshooting issues](#troubleshooting-issues)
   - [Enable Debug Logs](#enable-debug-logs)
 
-A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/).
+A [Logstash](https://github.com/elastic/logstash) output plugin for sending logs to the Dynatrace [Generic log ingest API v2](https://docs.dynatrace.com/docs/shortlink/api-log-monitoring-v2-post-ingest).
 Please review the documentation for this API before using the plugin.
 
 ## Installation Prerequisites
@@ -81,7 +81,7 @@ The following configuration options are supported by all output plugins:
 * Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string)
 * Required
 
-This is the full URL of the [Generic log ingest API v2](https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/) endpoint on your ActiveGate.
+This is the full URL of the [Generic log ingest API v2](https://docs.dynatrace.com/docs/shortlink/api-log-monitoring-v2-post-ingest/) endpoint on your ActiveGate.
 Example: `"ingest_endpoint_url" => "https://abc123456.live.dynatrace.com/api/v2/logs/ingest"`
 
 ### `api_key`
@@ -89,7 +89,7 @@ Example: `"ingest_endpoint_url" => "https://abc123456.live.dynatrace.com/api/v2/
 * Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string)
 * Required
 
-This is the [Dynatrace API token](https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication/) which will be used to authenticate log ingest requests.
+This is the [Dynatrace API token](https://docs.dynatrace.com/docs/shortlink/api-authentication) which will be used to authenticate log ingest requests.
 It requires the `logs.ingest` (Ingest Logs) scope to be set and it is recommended to limit scope to only this one.
 Example: `"api_key" => "dt0c01.4XLO3..."`
 
