@@ -20,7 +20,7 @@ include::{include_path}/plugin_header.asciidoc[]
 
 ==== Description
 
-A logstash output plugin for sending logs to the Dynatrace https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/[Generic log ingest API v2].
+A logstash output plugin for sending logs to the Dynatrace https://docs.dynatrace.com/docs/shortlink/api-log-monitoring-v2-post-ingest[Generic log ingest API v2].
 Please review the documentation for this API before using the plugin.
 
 [id="plugins-{type}s-{plugin}-options"]
@@ -44,7 +44,7 @@ output plugins.
 
   * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
 
-This is the full URL of the https://www.dynatrace.com/support/help/how-to-use-dynatrace/log-monitoring/log-monitoring-v2/post-log-ingest/[Generic log ingest API v2] endpoint on your ActiveGate.
+This is the full URL of the https://docs.dynatrace.com/docs/shortlink/api-log-monitoring-v2-post-ingest[Generic log ingest API v2] endpoint on your ActiveGate.
 Example: `"ingest_endpoint_url" => "https://abc123456.live.dynatrace.com/api/v2/logs/ingest"`
 
 [id="plugins-{type}s-{plugin}-api_key"]
@@ -52,7 +52,7 @@ Example: `"ingest_endpoint_url" => "https://abc123456.live.dynatrace.com/api/v2/
 
   * Value type is {logstash-ref}/configuration-file-structure.html#string[string]
 
-This is the https://www.dynatrace.com/support/help/dynatrace-api/basics/dynatrace-api-authentication/[Dynatrace API token] which will be used to authenticate log ingest requests.
+This is the https://docs.dynatrace.com/docs/shortlink/api-authentication/[Dynatrace API token] which will be used to authenticate log ingest requests.
 It requires the `logs.ingest` (Ingest Logs) scope to be set and it is recommended to limit scope to only this one.
 Example: `"api_key" => "dt0c01.4XLO3..."`
 
