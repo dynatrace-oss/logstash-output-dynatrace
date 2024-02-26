@@ -1,3 +1,15 @@
+## 0.6.0
+
+- Disable cookie processing by default
+
+## 0.5.1
+
+- Split large batches into smaller requests in order to meet Dynatrace API payload size limitations
+
+## 0.5.0
+
+- Rewrite plugin using http client mixin
+
 ## 0.4.0
 
 - Add` OpenSSL::SSL::SSLError` to the list of retried exception
