@@ -77,6 +77,9 @@ module LogStash
       # Maximum size payload to send to the Dynatrace API in Bytes. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
       config :max_payload_size, validate: :number, default: 4_500_000
 
+      # Disable cookie support. Overridden default value from LogStash::PluginMixins::HttpClient
+      config :cookies, :validate => :boolean, :default => false
+
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
         @ssl_verification_mode = 'none' if @ssl_verify_none
