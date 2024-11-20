@@ -119,8 +119,10 @@ This setting allows to configure an HTTP proxy to route exported data.
 The supported configuration options and their syntax are the same as for the [proxy option](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-http.html#plugins-outputs-http-proxy) in the HTTP output plugin:
 
 1. `proxy => http://example.org:1234`
-2. `proxy => { host => "example.org", port => 80, scheme => 'http', user => 'username@host', password => 'password' }`
-3. `proxy => { url =>  'http://example.org:1234', user => 'username@host', password => 'password' }`
+2. `proxy => { host => "example.org" port => 80 scheme => 'http' user => 'username@host' password => 'password' }`
+3. `proxy => { url =>  'http://example.org:1234' user => 'username@host' password => 'password' }`
+
+Note that [Hashes](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash) in the Logstash configuration file format use spaces as delimiters between entries, not commas.
 
 ### `enable_metric`
 
