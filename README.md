@@ -116,7 +116,7 @@ This option may be required if you are using a self-signed certificate, an expir
 
 This setting allows to configure an HTTP proxy to route exported data.
 
-The supported configuration options and their syntay are the same as for the [proxy option](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-http.html#plugins-outputs-http-proxy) in the HTTP output plugin:
+The supported configuration options and their syntax are the same as for the [proxy option](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-http.html#plugins-outputs-http-proxy) in the HTTP output plugin:
 
 1. `proxy => http://example.org:1234`
 2. `proxy => { host => "example.org", port => 80, scheme => 'http', user => 'username@host', password => 'password' }`
