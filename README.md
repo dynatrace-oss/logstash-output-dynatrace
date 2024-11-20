@@ -113,6 +113,7 @@ This option may be required if you are using a self-signed certificate, an expir
 * Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash)
 * Optional
 * No default value
+* Introduced in `logstash-output-dynatrace` version `0.5.0` (not available in older versions)
 
 This setting allows to configure an HTTP proxy to route exported data.
 
