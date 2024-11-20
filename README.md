@@ -110,7 +110,7 @@ This option may be required if you are using a self-signed certificate, an expir
 
 ### `proxy`
 
-* Value type is a [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash)
+* Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash)
 * Optional
 * No default value
 
