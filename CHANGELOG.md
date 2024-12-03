@@ -1,3 +1,7 @@
+## 0.6.1
+
+- Add new development dependency `rackup` for logstash 8.x compatibility
+
 ## 0.6.0
 
 - Disable cookie processing by default
