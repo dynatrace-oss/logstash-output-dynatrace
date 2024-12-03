@@ -437,10 +437,10 @@ describe LogStash::Outputs::Dynatrace do
 end
 
 RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starting web server with TLS
-  @@default_server_settings = TestApp.server_settings.dup
+  let(:default_server_settings) { TestApp.server_settings.dup }
 
   before do
-    TestApp.server_settings = @@default_server_settings.merge(webrick_config)
+    TestApp.server_settings = default_server_settings.merge(webrick_config)
 
     TestApp.last_request = nil
 
@@ -465,7 +465,7 @@ RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starti
     rescue StandardError
       nil
     end
-    TestApp.server_settings = @@default_server_settings
+    TestApp.server_settings = default_server_settings
   end
 
   let(:ssl_cert_host) { 'localhost' }
