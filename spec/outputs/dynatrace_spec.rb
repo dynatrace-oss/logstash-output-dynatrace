@@ -347,7 +347,7 @@ describe LogStash::Outputs::Dynatrace do
       end
 
       let(:last_request) { TestApp.last_request }
-      let(:body) { last_request.body.read }
+      let(:body) { read_last_request_body(last_request) }
       let(:content_type) { last_request.env['CONTENT_TYPE'] }
 
       it 'should receive the request' do
@@ -437,10 +437,10 @@ describe LogStash::Outputs::Dynatrace do
 end
 
 RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starting web server with TLS
-  @@default_server_settings = TestApp.server_settings.dup
+  let(:default_server_settings) { TestApp.server_settings.dup }
 
   before do
-    TestApp.server_settings = @@default_server_settings.merge(webrick_config)
+    TestApp.server_settings = default_server_settings.merge(webrick_config)
 
     TestApp.last_request = nil
 
@@ -465,7 +465,7 @@ RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starti
     rescue StandardError
       nil
     end
-    TestApp.server_settings = @@default_server_settings
+    TestApp.server_settings = default_server_settings
   end
 
   let(:ssl_cert_host) { 'localhost' }
@@ -483,7 +483,7 @@ RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starti
   after  { subject.close }
 
   let(:last_request) { TestApp.last_request }
-  let(:last_request_body) { last_request.body.read }
+  let(:last_request_body) { read_last_request_body(last_request) }
 
   let(:event) { LogStash::Event.new('message' => 'hello!') }
 
@@ -549,4 +549,11 @@ RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starti
       end
     end
   end
+end
+
+# Pre-emptively rewind the retrieval of `last_request.body` - for form based endpoints, the body
+# is placed in params, and body is empty, requiring a `rewind` for the body to be available for comparison
+def read_last_request_body(last_request)
+  last_request.body.rewind
+  last_request.body.read
 end
