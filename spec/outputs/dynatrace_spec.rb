@@ -409,11 +409,11 @@ describe LogStash::Outputs::Dynatrace do
     include_examples('integration tests')
   end
 
-  # describe "integration test with gzip compression" do
-  #   include_examples("integration tests") do
-  #     let(:base_config) { { "http_compression" => true } }
-  #   end
-  # end
+  describe "integration test with gzip compression" do
+    include_examples("integration tests") do
+      let(:base_config) { { "http_compression" => true } }
+    end
+  end
 
   describe 'retryable error in termination' do
     let(:ingest_endpoint_url) { "http://localhost:#{port - 1}/invalid" }

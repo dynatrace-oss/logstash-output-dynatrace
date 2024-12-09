@@ -63,6 +63,7 @@ The following configuration options are supported by the Dynatrace output plugin
 | [`ingest_endpoint_url`](#ingest_endpoint_url) | [String](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string)   | Yes      |
 | [`api_key`](#api_key)                         | [String](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string)   | Yes      |
 | [`ssl_verify_none`](#ssl_verify_none)         | [Boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean) | No       |
+| [`http_compression`](#http_compression)         | [Boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean) | No       |
 
 
 ### Common Options
@@ -146,6 +147,15 @@ output {
   }
 }
 ```
+
+### `http_compression`
+
+* Value type is [boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean)
+* Optional
+* Default value is `false`
+
+Setting `http_compression` to `true` causes the output plugin to compress all requests to the Dynatrace API using `gzip`.
+This can result in a reduction in size and transmission time of network requests at the expense of some additional CPU and memory consumption.
 
 ## Troubleshooting issues
 

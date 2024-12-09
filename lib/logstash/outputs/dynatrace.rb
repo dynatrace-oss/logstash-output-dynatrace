@@ -21,6 +21,7 @@ require 'logstash/version'
 require 'dynatrace/version'
 require 'uri'
 require 'logstash/plugin_mixins/http_client'
+require 'zlib'
 
 # These constants came from the http plugin config but we don't want them configurable
 # If encountered as response codes this plugin will retry these requests
@@ -79,6 +80,9 @@ module LogStash
 
       # Disable cookie support. Overridden default value from LogStash::PluginMixins::HttpClient
       config :cookies, :validate => :boolean, :default => false
+
+      # Set this to true if you want to enable gzip compression for your http requests
+      config :http_compression, :validate => :boolean, :default => false
 
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
@@ -253,6 +257,12 @@ module LogStash
       def send_event(event, attempt)
         headers = make_headers
 
+        # Compress the body and add appropriate header
+        if @http_compression == true
+          headers["Content-Encoding"] = "gzip"
+          event = gzip(event)
+        end
+
         # Create an async request
         response = client.post(ingest_endpoint_url, body: event, headers: headers)
 
@@ -330,6 +340,16 @@ module LogStash
       # This is split into a separate method mostly to help testing
       def log_warning(message, opts)
         @logger.warn(message, opts)
+      end
+
+      # gzip data
+      def gzip(data)
+        gz = StringIO.new
+        gz.set_encoding("BINARY")
+        z = Zlib::GzipWriter.new(gz)
+        z.write(data)
+        z.close
+        gz.string
       end
     end
   end
