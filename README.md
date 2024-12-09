@@ -15,6 +15,7 @@
   - [`ingest_endpoint_url`](#ingest_endpoint_url)
   - [`api_key`](#api_key)
   - [`ssl_verify_none`](#ssl_verify_none)
+  - [`proxy`](#proxy)
   - [`enable_metric`](#enable_metric)
   - [`id`](#id)
 - [Troubleshooting issues](#troubleshooting-issues)
@@ -71,7 +72,8 @@ The following configuration options are supported by all output plugins:
 
 | Setting                           | Input type                                                                                            | Required |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------- | -------- |
-| [`codec`](#codec)                 | [Codec](https://www.elastic.co/guide/en/logstash/7.16/configuration-file-structure.html#codec)        | No       |
+| [`proxy`](#proxy)                 | [String](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [Hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash) | No |
+|  `codec`                          | [Codec](https://www.elastic.co/guide/en/logstash/7.16/configuration-file-structure.html#codec)        | No       |
 | [`enable_metric`](#enable_metric) | [Boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean) | No       |
 | [`id`](#id)                       | [String](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string)   | No       |
 
@@ -107,6 +109,23 @@ This option may be required if you are using a self-signed certificate, an expir
 > NOTE: Starting in plugin version `0.5.0`, this option has no effect in versions of Logstash older than `8.1.0`.
 > If this functionality is required, it is recommended to update Logstash or stay at plugin version `0.4.x` or older.
 
+### `proxy`
+
+* Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash)
+* Optional
+* No default value
+* Introduced in `logstash-output-dynatrace` version `0.5.0` (not available in older versions)
+
+This setting configures an HTTP proxy to route exported data through.
+
+The supported configuration options and their syntax are the same as for the [proxy option](https://www.elastic.co/guide/en/logstash/current/plugins-outputs-http.html#plugins-outputs-http-proxy) in the HTTP output plugin:
+
+1. `proxy => http://example.org:1234`
+2. `proxy => { host => "example.org" port => 80 scheme => 'http' user => 'username@host' password => 'password' }`
+3. `proxy => { url =>  'http://example.org:1234' user => 'username@host' password => 'password' }`
+
+Note that [Hashes](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash) in the Logstash configuration file format use spaces as delimiters between entries, not commas.
+
 ### `enable_metric`
 
 * Value type is [boolean](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#boolean)
@@ -117,7 +136,7 @@ Disable or enable metric logging for this specific plugin instance. By default w
 ### `id`
 
 * Value type is string
-* There is no default value for this setting.
+* No default value
 
 Add a unique ID to the plugin configuration. If no ID is specified, Logstash will generate one. It is strongly recommended to set this ID in your configuration. This is particularly useful when you have two or more plugins of the same type. For example, if you have 2 dynatrace outputs. Adding a named ID in this case will help in monitoring Logstash when using the monitoring APIs.
 
