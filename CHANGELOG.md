@@ -1,6 +1,8 @@
-## 0.6.1
+## 0.7.0
 
 - Add new development dependency `rackup` for logstash 8.x compatibility
+- Enable `compression` configuration to compress payloads using `gzip`
+- Document `proxy` configuration
 
 ## 0.6.0
 
