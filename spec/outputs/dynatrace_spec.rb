@@ -233,7 +233,8 @@ describe LogStash::Outputs::Dynatrace do
   end
 
   context 'max_payload_size 500' do
-    let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => 500 } }
+    let(:max_payload_size) { 500 }
+    let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => max_payload_size } }
     subject { LogStash::Outputs::Dynatrace.new(config) }
 
     before do
@@ -242,12 +243,16 @@ describe LogStash::Outputs::Dynatrace do
 
     it 'should send 2 400B messages in multiple requests' do
       subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 400 }) })
-      expect(subject).to have_received(:send_event).exactly(2).times
+      expect(subject).to have_received(:send_event).exactly(2).times do |s|
+        expect(s.length).to be <= max_payload_size
+      end
     end
 
     it 'should send 2 100B messages in a single request' do
       subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 100 }) })
-      expect(subject).to have_received(:send_event).exactly(1).time
+      expect(subject).to have_received(:send_event).exactly(1).time do |s|
+        expect(s.length).to be <= max_payload_size
+      end
     end
 
     it 'should drop messages larger than max_payload_size' do
@@ -256,14 +261,9 @@ describe LogStash::Outputs::Dynatrace do
         LogStash::Event.new({ 'event' => 'n' * 600 }),
         LogStash::Event.new({ 'event' => 'n' * 400 }),
       ])
-      expect(subject).to have_received(:send_event).exactly(1).time
-    end
-
-    it 'should drop messages larger than max_payload_size' do
-      subject.multi_receive([
-        LogStash::Event.new({ 'event' => 'small' }),
-      ])
-      expect(subject).to have_received(:send_event).exactly(1).time
+      expect(subject).to have_received(:send_event).exactly(1).time do |s|
+        expect(s.length).to be <= max_payload_size
+      end
     end
   end
 
