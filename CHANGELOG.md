@@ -1,3 +1,7 @@
+## 0.7.1
+
+- Fix an error where max payload size was calculated using character count instead of bytes
+
 ## 0.7.0
 
 - Add new development dependency `rackup` for logstash 8.x compatibility

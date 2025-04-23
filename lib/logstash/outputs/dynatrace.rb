@@ -122,11 +122,11 @@ module LogStash
 
         def offer(serialized_event)
           # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
-          batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.length
+          batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.bytesize
           return false if batch_size_bytes > @max_batch_size
 
           @serialized_events.push(serialized_event)
-          @batch_events_size += serialized_event.length
+          @batch_events_size += serialized_event.bytesize
           true
         end
 
@@ -178,8 +178,8 @@ module LogStash
 
         events.each do |event|
           serialized_event = LogStash::Json.dump(event.to_hash)
-          if serialized_event.length > @max_payload_size
-            log_params = { size: serialized_event.length }
+          if serialized_event.bytesize > @max_payload_size
+            log_params = { size: serialized_event.bytesize }
             log_params[:body] = serialized_event if @debug_include_body
             log_warning('Event larger than max_payload_size dropped', log_params)
             next
