@@ -244,14 +244,14 @@ describe LogStash::Outputs::Dynatrace do
     it 'should send 2 400B messages in multiple requests' do
       subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 400 }) })
       expect(subject).to have_received(:send_event).exactly(2).times do |s|
-        expect(s.length).to be <= max_payload_size
+        expect(s.bytesize).to be <= max_payload_size
       end
     end
 
     it 'should send 2 100B messages in a single request' do
       subject.multi_receive([1, 2].map { |n| LogStash::Event.new({ 'n' => n.to_s * 100 }) })
       expect(subject).to have_received(:send_event).exactly(1).times do |s|
-        expect(s.length).to be <= max_payload_size
+        expect(s.bytesize).to be <= max_payload_size
       end
     end
 
@@ -262,7 +262,7 @@ describe LogStash::Outputs::Dynatrace do
         LogStash::Event.new({ 'event' => 'n' * 400 }),
       ])
       expect(subject).to have_received(:send_event).exactly(1).times do |s|
-        expect(s.length).to be <= max_payload_size
+        expect(s.bytesize).to be <= max_payload_size
       end
     end
   end
