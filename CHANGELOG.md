@@ -1,3 +1,7 @@
+## 0.7.2
+
+- Log response bodies when the response is `200` indicating the request was only partially accepted
+ 
 ## 0.7.1
 
 - Fix an error where max payload size was calculated using character count instead of bytes
