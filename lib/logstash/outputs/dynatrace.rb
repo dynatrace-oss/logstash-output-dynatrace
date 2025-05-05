@@ -272,8 +272,7 @@ module LogStash
 
         if response_success?(response)
           # some events were not accepted but we don't know which ones or why
-          # log a warning
-          if response_partial_success?(response) log_partial_success_response(response)
+          log_partial_success_response(response) if response_partial_success?(response)
           [:success, event, attempt]
         elsif retryable_response?(response)
           log_retryable_response(response)
