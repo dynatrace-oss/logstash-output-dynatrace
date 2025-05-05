@@ -160,6 +160,10 @@ module LogStash
         end
       end
 
+      def log_partial_success_response(response)
+        @logger.error("Encountered partial success response", code: response.code, body: response.body)
+      end
+
       def log_error_response(response, ingest_endpoint_url, event)
         log_failure(
           "Encountered non-2xx HTTP code #{response.code}",
@@ -267,6 +271,9 @@ module LogStash
         response = client.post(ingest_endpoint_url, body: event, headers: headers)
 
         if response_success?(response)
+          # some events were not accepted but we don't know which ones or why
+          # log a warning
+          if response_partial_success?(response) log_partial_success_response(response)
           [:success, event, attempt]
         elsif retryable_response?(response)
           log_retryable_response(response)
@@ -313,6 +320,10 @@ module LogStash
 
       def response_success?(response)
         response.code >= 200 && response.code <= 299
+      end
+
+      def response_partial_success?(response)
+        response.code == 200
       end
 
       def retryable_response?(response)
