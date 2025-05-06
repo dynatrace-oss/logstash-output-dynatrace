@@ -98,7 +98,12 @@ class TestApp < Sinatra::Base
 
   multiroute(%w[get post put patch delete], '/good') do
     self.class.last_request = request
-    [200, 'YUP']
+    [204, 'YUP']
+  end
+
+  multiroute(%w[get post put patch delete], '/partial') do
+    self.class.last_request = request
+    [200, 'partial success']
   end
 
   multiroute(%w[get post put patch delete], '/bad') do

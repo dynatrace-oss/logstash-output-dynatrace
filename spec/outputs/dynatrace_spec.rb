@@ -168,6 +168,19 @@ describe LogStash::Outputs::Dynatrace do
       end
     end
 
+    context 'with partial success responses' do
+      let(:ingest_endpoint_url) { "http://localhost:#{port}/partial" }
+
+      before do
+        allow(subject).to receive(:log_partial_success_response)
+      end
+
+      it 'should warn on partial success' do
+        subject.multi_receive([event])
+        expect(subject).to have_received(:log_partial_success_response)
+      end
+    end
+
     context 'with retryable failing requests' do
       let(:ingest_endpoint_url) { "http://localhost:#{port}/retry" }
       let(:api_key) { 'placeholder-key' }
