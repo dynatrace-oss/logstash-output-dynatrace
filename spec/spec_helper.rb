@@ -95,7 +95,7 @@ class TestApp < Sinatra::Base
   def self.retry_fail_count
     @retry_fail_count || 2
   end
-  
+
   multiroute(%w[get post put patch delete], '/good') do
     self.class.last_request = request
     [204, 'YUP']

@@ -161,7 +161,7 @@ module LogStash
       end
 
       def log_partial_success_response(response)
-        @logger.error("Encountered partial success response", code: response.code, body: response.body)
+        @logger.warn("Encountered partial success response", code: response.code, body: response.body)
       end
 
       def log_error_response(response, ingest_endpoint_url, event)
