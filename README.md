@@ -115,8 +115,8 @@ This option may be required if you are using a self-signed certificate, an expir
 * Optional
 * Default value is `9_500_000`
 
-It is recommended not to set this optional configuration unless you have a specific reason to do so.
-If you, for example, are using a proxy with a payload size limit, this configuration can be used to change the maximum size batch that is sent to the server.
+It is recommended **not** to set this optional configuration unless you have a specific reason to do so.
+If you, for example, are using a proxy with a payload size limit, this configuration can be used to reduce the maximum size batch that is sent to the server.
 
 ### `proxy`
 
