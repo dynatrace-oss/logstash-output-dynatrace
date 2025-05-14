@@ -1,1 +1,1 @@
-logstash-output-dynatrace: '0.7.2'
+logstash-output-dynatrace: '0.8.0'

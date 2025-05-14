@@ -109,6 +109,15 @@ This option may be required if you are using a self-signed certificate, an expir
 > NOTE: Starting in plugin version `0.5.0`, this option has no effect in versions of Logstash older than `8.1.0`.
 > If this functionality is required, it is recommended to update Logstash or stay at plugin version `0.4.x` or older.
 
+### `max_payload_size`
+
+* Value type is [number](https://www.elastic.co/docs/reference/logstash/configuration-file-structure#number)
+* Optional
+* Default value is `9_500_000`
+
+It is recommended not to set this optional configuration unless you have a specific reason to do so.
+If you, for example, are using a proxy with a payload size limit, this configuration can be used to change the maximum size batch that is sent to the server.
+
 ### `proxy`
 
 * Value type is [string](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#string) or [hash](https://www.elastic.co/guide/en/logstash/current/configuration-file-structure.html#hash)
