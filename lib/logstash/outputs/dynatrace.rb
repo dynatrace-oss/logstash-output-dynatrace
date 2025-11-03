@@ -180,6 +180,8 @@ module LogStash
         pending = Queue.new
         batcher = Batcher.new(@max_payload_size)
 
+        log_debug('Trying to send logs to Dynatrace', event_count: events.length)
+
         events.each do |event|
           serialized_event = LogStash::Json.dump(event.to_hash)
           if serialized_event.bytesize > @max_payload_size
@@ -350,6 +352,11 @@ module LogStash
       # This is split into a separate method mostly to help testing
       def log_warning(message, opts)
         @logger.warn(message, opts)
+      end
+
+      # This is split into a separate method mostly to help testing
+      def log_debug(message, opts)
+        @logger.debug(message, opts)
       end
 
       # gzip data
