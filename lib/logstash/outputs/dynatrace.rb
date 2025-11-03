@@ -95,6 +95,8 @@ module LogStash
       end
 
       def multi_receive(events)
+        log_debug('Trying to send logs to Dynatrace', event_count: events.length)
+
         return if events.empty?
 
         send_events(events)
@@ -179,8 +181,6 @@ module LogStash
 
         pending = Queue.new
         batcher = Batcher.new(@max_payload_size)
-
-        log_debug('Trying to send logs to Dynatrace', event_count: events.length)
 
         events.each do |event|
           serialized_event = LogStash::Json.dump(event.to_hash)
