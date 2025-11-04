@@ -66,6 +66,10 @@ describe LogStash::Outputs::Dynatrace do
         expect(subject).to have_received(:log_failure).with(anything, hash_including(:backtrace))
       end
 
+      it 'logs a debug message' do
+        expect(subject).to have_received(:log_debug).with(any_args)
+      end
+
       context 'with debug_include_headers false (default)' do
         it 'does not log headers' do
           expect(subject).to have_received(:log_failure).with(anything, hash_not_including(:headers))
@@ -124,6 +128,7 @@ describe LogStash::Outputs::Dynatrace do
       .and_call_original
     allow(subject).to receive(:log_failure).with(any_args)
     allow(subject).to receive(:log_warning).with(any_args)
+    allow(subject).to receive(:log_debug).with(any_args)
     allow(subject).to receive(:log_retryable_response).with(any_args)
   end
 
