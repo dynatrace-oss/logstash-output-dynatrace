@@ -356,7 +356,7 @@ module LogStash
 
       # This is split into a separate method mostly to help testing
       def log_debug(message, opts)
-        @logger.debug(message, opts)
+        @logger.debug? && @logger.debug(message, opts)
       end
 
       # gzip data
