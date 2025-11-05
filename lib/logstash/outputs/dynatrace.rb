@@ -95,6 +95,8 @@ module LogStash
       end
 
       def multi_receive(events)
+        log_debug('Trying to send logs to Dynatrace', event_count: events.length)
+
         return if events.empty?
 
         send_events(events)
@@ -350,6 +352,11 @@ module LogStash
       # This is split into a separate method mostly to help testing
       def log_warning(message, opts)
         @logger.warn(message, opts)
+      end
+
+      # This is split into a separate method mostly to help testing
+      def log_debug(message, opts)
+        @logger.debug? && @logger.debug(message, opts)
       end
 
       # gzip data
