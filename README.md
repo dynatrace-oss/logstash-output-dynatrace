@@ -177,6 +177,9 @@ in order to isolate problems caused by only the Dynatrace output plugin.
 
 See <https://www.elastic.co/guide/en/logstash/current/logging.html#logging>.
 
+The plugin will output some debug log messages, including the number of log lines received, which should help
+with debugging.
+
 You can enable debug logging in one of several ways:
 
 - Use the `--log.level debug` command line flag
