@@ -54,5 +54,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'rubocop-rake', '0.5.1'
 
   # Pin to avoid using new Fiber-based implementation that breaks tests here
-  s.add_development_dependency 'rackup', "< 2.1.0"
+  s.add_development_dependency 'rackup', "< 2.3.2"
 end
