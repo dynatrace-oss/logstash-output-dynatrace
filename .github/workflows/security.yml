@@ -4,6 +4,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # TEMPORARY: lets this PR exercise the test job before the workflow exists on main. Remove before merge.
+  pull_request:
 
 permissions:
   contents: read
@@ -38,7 +40,7 @@ jobs:
     name: Test for security vulnerabilities (no upload)
     # Manual runs on other branches only report locally via `snyk test`;
     # `snyk monitor` (build job) is reserved for main.
-    if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+    if: (github.event_name == 'workflow_dispatch' || github.event_name == 'pull_request') && github.ref != 'refs/heads/main' # TEMPORARY: pull_request
     runs-on: ubuntu-26.04
     steps:
       - name: Checkout
