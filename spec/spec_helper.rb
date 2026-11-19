@@ -23,7 +23,7 @@ require 'webrick'
 require 'webrick/https'
 require 'openssl'
 
-require "supports/compressed_requests"
+require 'supports/compressed_requests'
 
 PORT = rand(65_535 - 1024) + 1025
 
@@ -60,17 +60,13 @@ class TestApp < Sinatra::Base
   set :environment, :production
   set :sessions, false
 
-  @@server_settings = {
+  @server_settings = {
     AccessLog: [], # disable WEBrick logging
     Logger: WEBrick::BasicLog.new(nil, WEBrick::BasicLog::FATAL)
   }
 
-  def self.server_settings
-    @@server_settings
-  end
-
-  def self.server_settings=(settings)
-    @@server_settings = settings
+  class << self
+    attr_accessor :server_settings
   end
 
   def self.multiroute(methods, path, &block)

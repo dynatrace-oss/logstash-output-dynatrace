@@ -1,11 +1,12 @@
-# encoding: utf-8
+# frozen_string_literal: true
+
 #
 # based on relistan's rack handler
 # out of the box rack only gives use the rack deflater handler to return compressed
 # response, this gist offer the inverse and should work on all rack based app like sinatra or rails.
 #
 # original source: https://gist.github.com/relistan/2109707
-require "zlib"
+require 'zlib'
 
 class CompressedRequests
   def initialize(app)
@@ -13,11 +14,11 @@ class CompressedRequests
   end
 
   def method_handled?(env)
-    ['POST', 'PUT'].include? env['REQUEST_METHOD']
+    %w[POST PUT].include? env['REQUEST_METHOD']
   end
 
   def encoding_handled?(env)
-    ['gzip', 'deflate'].include? env['HTTP_CONTENT_ENCODING']
+    %w[gzip deflate].include? env['HTTP_CONTENT_ENCODING']
   end
 
   def call(env)
@@ -30,13 +31,13 @@ class CompressedRequests
     end
 
     status, headers, response = @app.call(env)
-    return [status, headers, response]
+    [status, headers, response]
   end
 
   def decode(input, content_encoding)
     case content_encoding
-      when 'gzip' then Zlib::GzipReader.new(input).read
-      when 'deflate' then Zlib::Inflate.inflate(input.read)
+    when 'gzip' then Zlib::GzipReader.new(input).read
+    when 'deflate' then Zlib::Inflate.inflate(input.read)
     end
   end
 end
