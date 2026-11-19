@@ -39,7 +39,7 @@ jobs:
           # installation at runtime. The newest versions on rubygems date from 2017 and would
           # pull logstash-core 5.6.4 into the scan, so an empty local stub stands in for it.
           mkdir snyk-runtime/logstash-core-plugin-api
-          printf '%s\n' "Gem::Specification.new { |s| s.name = 'logstash-core-plugin-api'; s.version = '2.1.28'; s.summary = 'stub' }" \
+          printf '%s\n' "Gem::Specification.new { |s| s.name = 'logstash-core-plugin-api'; s.version = '2.1.28'; s.summary = 'stub'; s.authors = ['stub'] }" \
             > snyk-runtime/logstash-core-plugin-api/logstash-core-plugin-api.gemspec
           echo "gem 'logstash-core-plugin-api', path: 'logstash-core-plugin-api'" >> snyk-runtime/Gemfile
           (cd snyk-runtime && bundle lock)
@@ -78,7 +78,7 @@ jobs:
           # installation at runtime. The newest versions on rubygems date from 2017 and would
           # pull logstash-core 5.6.4 into the scan, so an empty local stub stands in for it.
           mkdir snyk-runtime/logstash-core-plugin-api
-          printf '%s\n' "Gem::Specification.new { |s| s.name = 'logstash-core-plugin-api'; s.version = '2.1.28'; s.summary = 'stub' }" \
+          printf '%s\n' "Gem::Specification.new { |s| s.name = 'logstash-core-plugin-api'; s.version = '2.1.28'; s.summary = 'stub'; s.authors = ['stub'] }" \
             > snyk-runtime/logstash-core-plugin-api/logstash-core-plugin-api.gemspec
           echo "gem 'logstash-core-plugin-api', path: 'logstash-core-plugin-api'" >> snyk-runtime/Gemfile
           (cd snyk-runtime && bundle lock)
