@@ -1,4 +1,4 @@
-require: rubocop-rake
+plugins: rubocop-rake
 
 AllCops:
   TargetRubyVersion: 2.4
@@ -7,10 +7,39 @@ AllCops:
 Metrics/BlockLength:
   Exclude:
     - 'spec/**/*'
+    - '*.gemspec'
 
 Metrics/MethodLength:
   Exclude:
     - 'spec/**/*'
+    - 'lib/logstash/outputs/dynatrace.rb'
+
+# The retry loop in send_events/send_event follows logstash-output-http;
+# splitting it only to satisfy these metrics would make it harder to compare.
+Metrics/AbcSize:
+  Exclude:
+    - 'lib/logstash/outputs/dynatrace.rb'
+
+Metrics/ClassLength:
+  Exclude:
+    - 'lib/logstash/outputs/dynatrace.rb'
+
+Metrics/CyclomaticComplexity:
+  Exclude:
+    - 'lib/logstash/outputs/dynatrace.rb'
+
+Metrics/PerceivedComplexity:
+  Exclude:
+    - 'lib/logstash/outputs/dynatrace.rb'
+
+# Logstash plugin convention: dev dependencies live in the gemspec.
+Gemspec/DevelopmentDependencies:
+  Enabled: false
+
+# Releases are pushed from CI with an API key (release.yaml); requiring MFA
+# for pushes would block them.
+Gemspec/RequireMFA:
+  Enabled: false
 
 Gemspec/RequiredRubyVersion:
   Enabled: false
