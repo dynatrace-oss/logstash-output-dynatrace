@@ -28,13 +28,19 @@ jobs:
           ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
 
       - name: Resolve dependencies
-        # No Gemfile.lock is committed (gem convention); resolve one so Snyk can scan the dependency tree.
-        run: bundle lock
+        # No Gemfile.lock is committed (gem convention). Resolve one from the gem's runtime
+        # dependencies only, so Snyk scans what ships with the plugin, not dev/test tooling.
+        # The gem source is taken over from the repo's own Gemfile.
+        run: |
+          mkdir snyk-runtime
+          grep '^source ' Gemfile > snyk-runtime/Gemfile
+          echo "gem 'logstash-output-dynatrace', path: '..'" >> snyk-runtime/Gemfile
+          (cd snyk-runtime && bundle lock)
 
       - name: Run Snyk
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk monitor --file=Gemfile.lock --project-name=dynatrace-oss/logstash-output-dynatrace
+        run: snyk monitor --file=snyk-runtime/Gemfile.lock --project-name=dynatrace-oss/logstash-output-dynatrace
 
   test:
     name: Test for security vulnerabilities (no upload)
@@ -54,10 +60,17 @@ jobs:
           ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
 
       - name: Resolve dependencies
-        run: bundle lock
+        # No Gemfile.lock is committed (gem convention). Resolve one from the gem's runtime
+        # dependencies only, so Snyk scans what ships with the plugin, not dev/test tooling.
+        # The gem source is taken over from the repo's own Gemfile.
+        run: |
+          mkdir snyk-runtime
+          grep '^source ' Gemfile > snyk-runtime/Gemfile
+          echo "gem 'logstash-output-dynatrace', path: '..'" >> snyk-runtime/Gemfile
+          (cd snyk-runtime && bundle lock)
 
       - name: Run Snyk
         # Findings of all severities (low and above) are reported and fail the job.
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        run: snyk test --severity-threshold=low --file=Gemfile.lock
+        run: snyk test --severity-threshold=low --file=snyk-runtime/Gemfile.lock
