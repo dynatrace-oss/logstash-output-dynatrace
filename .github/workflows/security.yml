@@ -1,0 +1,96 @@
+name: Security check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Check for security vulnerabilities
+    # Snyk tracks main only; a manual run on another branch would overwrite main's snapshot.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
+
+      - name: Resolve dependencies
+        # No Gemfile.lock is committed (gem convention). Resolve one from the gem's runtime
+        # dependencies only, so Snyk scans what ships with the plugin, not dev/test tooling.
+        # The gem source is taken over from the repo's own Gemfile.
+        run: |
+          mkdir snyk-runtime
+          grep '^source ' Gemfile > snyk-runtime/Gemfile
+          echo "gem 'logstash-output-dynatrace', path: '..'" >> snyk-runtime/Gemfile
+          # logstash-core and logstash-core-plugin-api are supplied by the Logstash installation at
+          # runtime. The versions on rubygems are years old (logstash-core 7.5.2, plugin-api 2.1.28
+          # -> logstash-core 5.6.4) and don't reflect what users run, so empty local stubs stand in.
+          stub() {
+            mkdir "snyk-runtime/$1"
+            printf '%s\n' "Gem::Specification.new { |s| s.name = '$1'; s.version = '$2'; s.summary = 'stub'; s.authors = ['stub'] }" \
+              > "snyk-runtime/$1/$1.gemspec"
+            echo "gem '$1', path: '$1'" >> snyk-runtime/Gemfile
+          }
+          stub logstash-core 8.0.0
+          stub logstash-core-plugin-api 2.1.28
+          (cd snyk-runtime && bundle lock)
+
+      - name: Run Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor --file=snyk-runtime/Gemfile.lock --project-name=dynatrace-oss/logstash-output-dynatrace
+
+  test:
+    name: Test for security vulnerabilities (no upload)
+    # Manual runs on other branches only report locally via `snyk test`;
+    # `snyk monitor` (build job) is reserved for main.
+    if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
+
+      - name: Resolve dependencies
+        # No Gemfile.lock is committed (gem convention). Resolve one from the gem's runtime
+        # dependencies only, so Snyk scans what ships with the plugin, not dev/test tooling.
+        # The gem source is taken over from the repo's own Gemfile.
+        run: |
+          mkdir snyk-runtime
+          grep '^source ' Gemfile > snyk-runtime/Gemfile
+          echo "gem 'logstash-output-dynatrace', path: '..'" >> snyk-runtime/Gemfile
+          # logstash-core and logstash-core-plugin-api are supplied by the Logstash installation at
+          # runtime. The versions on rubygems are years old (logstash-core 7.5.2, plugin-api 2.1.28
+          # -> logstash-core 5.6.4) and don't reflect what users run, so empty local stubs stand in.
+          stub() {
+            mkdir "snyk-runtime/$1"
+            printf '%s\n' "Gem::Specification.new { |s| s.name = '$1'; s.version = '$2'; s.summary = 'stub'; s.authors = ['stub'] }" \
+              > "snyk-runtime/$1/$1.gemspec"
+            echo "gem '$1', path: '$1'" >> snyk-runtime/Gemfile
+          }
+          stub logstash-core 8.0.0
+          stub logstash-core-plugin-api 2.1.28
+          (cd snyk-runtime && bundle lock)
+
+      - name: Run Snyk
+        # Findings of all severities (low and above) are reported and fail the job.
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --severity-threshold=low --file=snyk-runtime/Gemfile.lock
