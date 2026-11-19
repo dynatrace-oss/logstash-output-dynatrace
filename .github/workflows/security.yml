@@ -1,0 +1,61 @@
+name: Security check
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Check for security vulnerabilities
+    # Snyk tracks main only; a manual run on another branch would overwrite main's snapshot.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
+
+      - name: Resolve dependencies
+        # No Gemfile.lock is committed (gem convention); resolve one so Snyk can scan the dependency tree.
+        run: bundle lock
+
+      - name: Run Snyk
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk monitor --file=Gemfile.lock --project-name=dynatrace-oss/logstash-output-dynatrace
+
+  test:
+    name: Test for security vulnerabilities (no upload)
+    # Manual runs on other branches only report locally via `snyk test`;
+    # `snyk monitor` (build job) is reserved for main.
+    if: github.event_name == 'workflow_dispatch' && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: snyk/actions/setup@9adf32b1121593767fc3c057af55b55db032dc04 # v1.0.0
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: jruby  # logstash plugins resolve against JRuby (logstash-core is java-only)
+
+      - name: Resolve dependencies
+        run: bundle lock
+
+      - name: Run Snyk
+        # Findings of all severities (low and above) are reported and fail the job.
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        run: snyk test --severity-threshold=low --file=Gemfile.lock
