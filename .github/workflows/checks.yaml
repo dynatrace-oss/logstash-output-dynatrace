@@ -25,8 +25,13 @@ jobs:
         with:
           ruby-version: '4.0'
       # Only the linters: the full bundle needs JRuby + Logstash (see unit-test).
-      # Versions match the gemspec dev dependencies.
-      - run: gem install rubocop -v 1.92.2 && gem install rubocop-rake -v 0.7.1
+      # Versions are read from the gemspec dev dependencies (kept current by Renovate).
+      # Public rubygems.org on purpose: this is a public OSS repo on GitHub-hosted
+      # runners, which cannot reach the internal Artifactory.
+      - name: Install linters
+        run: |
+          ruby -e 'Gem::Specification.load("logstash-output-dynatrace.gemspec").development_dependencies.each { |d| puts "#{d.name}:#{d.requirement.requirements.first.last}" if d.name.start_with?("rubocop") }' \
+            | xargs gem install
       - run: rubocop
   # Single stable check for branch protection, so the stack matrix can change
   # without touching the required status checks.
