@@ -1,0 +1,50 @@
+name: Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # Upstream logstash-plugins CI (replaces the Travis import of the same repo):
+  # runs the specs inside Logstash images for 8.current, 9.previous, 9.current,
+  # 9.next and main.
+  unit-test:
+    uses: logstash-plugins/.ci/.github/workflows/unit-tests.yml@ce634f31d4c9379776dfe8af79fabc898fa5b1c2 # 1.x
+    with:
+      notify-slack: false
+  lint:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: '4.0'
+      # Only the linters: the full bundle needs JRuby + Logstash (see unit-test).
+      # Versions are read from the gemspec dev dependencies (kept current by Renovate).
+      # Public rubygems.org on purpose: this is a public OSS repo on GitHub-hosted
+      # runners, which cannot reach the internal Artifactory.
+      - name: Install linters
+        run: |
+          ruby -e 'Gem::Specification.load("logstash-output-dynatrace.gemspec").development_dependencies.each { |d| puts "#{d.name}:#{d.requirement.requirements.first.last}" if d.name.start_with?("rubocop") }' \
+            | xargs gem install
+      - run: rubocop
+  # Single stable check for branch protection, so the stack matrix can change
+  # without touching the required status checks.
+  test-summary:
+    name: Test summary
+    if: always()
+    needs: [unit-test, lint]
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Check results
+        env:
+          UNIT_RESULT: ${{ needs.unit-test.result }}
+          LINT_RESULT: ${{ needs.lint.result }}
+        run: |
+          echo "unit-test: $UNIT_RESULT, lint: $LINT_RESULT"
+          test "$UNIT_RESULT" = success && test "$LINT_RESULT" = success

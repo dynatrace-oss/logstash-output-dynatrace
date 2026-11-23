@@ -221,7 +221,9 @@ describe LogStash::Outputs::Dynatrace do
 
   context 'max_payload_size 500' do
     let(:max_payload_size) { 500 }
-    let(:config) { { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => max_payload_size } }
+    let(:config) do
+      { 'ingest_endpoint_url' => ingest_endpoint_url, 'api_key' => api_key, 'max_payload_size' => max_payload_size }
+    end
     subject { LogStash::Outputs::Dynatrace.new(config) }
 
     before do
@@ -244,10 +246,10 @@ describe LogStash::Outputs::Dynatrace do
 
     it 'should drop messages larger than max_payload_size' do
       subject.multi_receive([
-        LogStash::Event.new({ 'event' => '🤣' * 400 }),
-        LogStash::Event.new({ 'event' => 'n' * 600 }),
-        LogStash::Event.new({ 'event' => 'n' * 400 }),
-      ])
+                              LogStash::Event.new({ 'event' => '🤣' * 400 }),
+                              LogStash::Event.new({ 'event' => 'n' * 600 }),
+                              LogStash::Event.new({ 'event' => 'n' * 400 })
+                            ])
       expect(subject).to have_received(:send_event).exactly(1).times do |s|
         expect(s.bytesize).to be <= max_payload_size
       end
@@ -262,7 +264,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject.client).to receive(:post) do |*args|
         unless raised
           raised = true
-          raise ::Manticore::UnknownException, 'Read timed out'
+          raise Manticore::UnknownException, 'Read timed out'
         end
         original_method.call(args)
       end
@@ -284,7 +286,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject.client).to receive(:post) do |*args|
         unless raised
           raised = true
-          raise ::Manticore::UnknownException, 'broken'
+          raise Manticore::UnknownException, 'broken'
         end
         original_method.call(args)
       end
@@ -328,7 +330,7 @@ describe LogStash::Outputs::Dynatrace do
       expect(subject.client).to receive(:post) do |*args|
         unless raised
           raised = true
-          raise ::Manticore::Timeout, 'broken'
+          raise Manticore::Timeout, 'broken'
         end
         original_method.call(args)
       end
@@ -417,9 +419,9 @@ describe LogStash::Outputs::Dynatrace do
     include_examples('integration tests')
   end
 
-  describe "integration test with gzip compression" do
-    include_examples("integration tests") do
-      let(:base_config) { { "http_compression" => true } }
+  describe 'integration test with gzip compression' do
+    include_examples('integration tests') do
+      let(:base_config) { { 'http_compression' => true } }
     end
   end
 
@@ -524,7 +526,9 @@ RSpec.describe LogStash::Outputs::Dynatrace do # different block as we're starti
 
       it 'keeps retrying due a protocol exception' do # TLSv1.1 not enabled by default
         expect(subject).to receive(:log_failure)
-          .with('Could not fetch URL', hash_including(message: 'No appropriate protocol (protocol is disabled or cipher suites are inappropriate)'))
+          .with('Could not fetch URL',
+                hash_including(message: 'No appropriate protocol ' \
+                                        '(protocol is disabled or cipher suites are inappropriate)'))
           .at_least(:once)
         Thread.start { subject.multi_receive [event] }
         sleep 1.0

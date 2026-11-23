@@ -30,6 +30,7 @@ RETRY_FAILED = true
 
 module LogStash
   module Outputs
+    # Logstash output that sends events to the Dynatrace log ingest API v2.
     class Dynatrace < LogStash::Outputs::Base
       include LogStash::PluginMixins::HttpClient
 
@@ -63,7 +64,8 @@ module LogStash
       # - on Managed: https://{your-domain}/e/{your-environment-id}/api/v2/logs/ingest
       config :ingest_endpoint_url, validate: :uri, required: true
 
-      # The API token to use to authenticate requests to the log ingestion endpoint. Must have `logs.ingest` (Ingest Logs) scope.
+      # The API token to use to authenticate requests to the log ingestion endpoint.
+      # Must have `logs.ingest` (Ingest Logs) scope.
       config :api_key, validate: :password, required: true
 
       # Disable SSL validation by setting :verify_mode OpenSSL::SSL::VERIFY_NONE
@@ -75,14 +77,15 @@ module LogStash
       # Include body in debug logs when HTTP errors occur. Body may be large and include sensitive data.
       config :debug_include_body, validate: :boolean, default: false
 
-      # Maximum size payload to send to the Dynatrace API in Bytes. Batches of events which would be larger than max_payload_size when serialized will be split into smaller batches of events.
+      # Maximum size payload to send to the Dynatrace API in Bytes. Batches of events which would be larger
+      # than max_payload_size when serialized will be split into smaller batches of events.
       config :max_payload_size, validate: :number, default: 9_500_000
 
       # Disable cookie support. Overridden default value from LogStash::PluginMixins::HttpClient
-      config :cookies, :validate => :boolean, :default => false
+      config :cookies, validate: :boolean, default: false
 
       # Set this to true if you want to enable gzip compression for your http requests
-      config :http_compression, :validate => :boolean, :default => false
+      config :http_compression, validate: :boolean, default: false
 
       def register
         # ssl_verification_mode config is from mixin but ssl_verify_none is our documented config
@@ -102,6 +105,7 @@ module LogStash
         send_events(events)
       end
 
+      # Re-queues an event for another send attempt when the timer fires.
       class RetryTimerTask < java.util.TimerTask
         def initialize(pending, event, attempt)
           @pending = pending
@@ -115,6 +119,7 @@ module LogStash
         end
       end
 
+      # Collects serialized events into a JSON array payload of at most max_batch_size bytes.
       class Batcher
         def initialize(max_batch_size)
           @max_batch_size = max_batch_size
@@ -122,7 +127,7 @@ module LogStash
           @serialized_events = []
         end
 
-        def offer(serialized_event)
+        def offer(serialized_event) # rubocop:disable Naming/PredicateMethod -- returns whether the event was added
           # 2 square brackets, the length of all previously serialized strings, commas, and the current event size
           batch_size_bytes = 2 + @batch_events_size + @serialized_events.length + serialized_event.bytesize
           return false if batch_size_bytes > @max_batch_size
@@ -155,7 +160,8 @@ module LogStash
       def log_retryable_response(response)
         retry_msg = RETRY_FAILED ? 'will retry' : "won't retry"
         if response.code == 429
-          @logger.debug? && @logger.debug("Encountered a 429 response, #{retry_msg}. This is not serious, just flow control via HTTP")
+          @logger.debug? && @logger.debug("Encountered a 429 response, #{retry_msg}. " \
+                                          'This is not serious, just flow control via HTTP')
         else
           @logger.warn("Encountered a retryable HTTP request in HTTP output, #{retry_msg}", code: response.code,
                                                                                             body: response.body)
@@ -163,7 +169,7 @@ module LogStash
       end
 
       def log_partial_success_response(response)
-        @logger.warn("Encountered partial success response", code: response.code, body: response.body)
+        @logger.warn('Encountered partial success response', code: response.code, body: response.body)
       end
 
       def log_error_response(response, ingest_endpoint_url, event)
@@ -199,14 +205,15 @@ module LogStash
 
         pending << [batcher.drain_and_serialize, 0] unless batcher.empty?
 
-        while popped = pending.pop
+        while (popped = pending.pop)
           break if popped == :done
 
           event, attempt = popped
 
           if attempt > 2 && pipeline_shutdown_requested?
-            raise PluginInternalQueueLeftoverError, 'Received pipeline shutdown request but http output has unfinished events. ' \
-                    'If persistent queue is enabled, events will be retried.'
+            raise PluginInternalQueueLeftoverError,
+                  'Received pipeline shutdown request but http output has unfinished events. ' \
+                  'If persistent queue is enabled, events will be retried.'
           end
 
           action, event, attempt = send_event(event, attempt)
@@ -251,12 +258,11 @@ module LogStash
       def pipeline_shutdown_requested?
         return super if defined?(super) # since LS 8.1.0
 
-        nil
+        false
       end
 
       def sleep_for_attempt(attempt)
-        sleep_for = attempt**2
-        sleep_for = sleep_for <= 60 ? sleep_for : 60
+        sleep_for = [attempt**2, 60].min
         (sleep_for / 2) + (rand(0..sleep_for) / 2)
       end
 
@@ -265,7 +271,7 @@ module LogStash
 
         # Compress the body and add appropriate header
         if @http_compression == true
-          headers["Content-Encoding"] = "gzip"
+          headers['Content-Encoding'] = 'gzip'
           event = gzip(event)
         end
 
@@ -320,7 +326,7 @@ module LogStash
       private
 
       def response_success?(response)
-        response.code >= 200 && response.code <= 299
+        response.code.between?(200, 299)
       end
 
       def response_partial_success?(response)
@@ -362,7 +368,7 @@ module LogStash
       # gzip data
       def gzip(data)
         gz = StringIO.new
-        gz.set_encoding("BINARY")
+        gz.set_encoding('BINARY')
         z = Zlib::GzipWriter.new(gz)
         z.write(data)
         z.close
