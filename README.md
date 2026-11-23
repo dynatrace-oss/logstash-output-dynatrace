@@ -1,7 +1,7 @@
 <!-- omit in toc -->
 # Logstash Dynatrace output plugin
 
-[![Travis Build Status](https://api.travis-ci.com/dynatrace-oss/logstash-output-dynatrace.svg?branch=main)](https://app.travis-ci.com/dynatrace-oss/logstash-output-dynatrace)
+[![Checks](https://github.com/dynatrace-oss/logstash-output-dynatrace/actions/workflows/checks.yaml/badge.svg?branch=main)](https://github.com/dynatrace-oss/logstash-output-dynatrace/actions/workflows/checks.yaml)
 
 > This project is developed and maintained by Dynatrace R&D.
 
