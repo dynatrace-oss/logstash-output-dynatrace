@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Plugin version, read from version.yaml.
 module DynatraceConstants
   require 'yaml'
   VERSION = YAML.load_file(File.expand_path('../../version.yaml',
