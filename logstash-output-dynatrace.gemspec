@@ -48,7 +48,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'sinatra'
   s.add_development_dependency 'webrick'
 
-  s.add_development_dependency 'rubocop', '1.92.2'
+  s.add_development_dependency 'rubocop', '1.92.3'
   s.add_development_dependency 'rubocop-rake', '0.7.1'
 
   # Pin to avoid using new Fiber-based implementation that breaks tests here
